@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotebookLM – Generátor promptů pro prezentace</title>
+    <style>
+        /* ========================================
+           CSS VARIABLES & RESET
+           ======================================== */
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #12171e;
+            --bg-tertiary: #1a2028;
+            --bg-input: #0d1117;
+            --border-color: #2d3640;
+            --border-focus: #4dabf7;
+            --text-primary: #e8edf4;
+            --text-secondary: #9ca8b8;
+            --text-muted: #636e7b;
+            --accent-blue: #4dabf7;
+            --accent-cyan: #22d3ee;
+            --accent-green: #34d399;
+            --accent-orange: #fb923c;
+            --accent-red: #f87171;
+            --accent-purple: #a78bfa;
+            --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+            --transition: 150ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ========================================
+           BASE STYLES
+           ======================================== */
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* ========================================
+           LAYOUT
+           ======================================== */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 18px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .header h1::before {
+            content: '🎯';
+            font-size: 1.4rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-left: 40px;
+            margin-top: 4px;
+        }
+
+        /* Preset controls */
+        .preset-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preset-select {
+            min-width: 260px;
+        }
+
+        /* Main content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left panel - Form */
+        .form-panel {
+            width: 52%;
+            min-width: 420px;
+            max-width: 640px;
+            overflow-y: auto;
+            padding: 24px;
+            border-right: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        /* Right panel - Output */
+        .output-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            background: var(--bg-primary);
+        }
+
+        /* ========================================
+           FORM SECTIONS
+           ======================================== */
+        .form-section {
+            margin-bottom: 20px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(90deg, rgba(77,171,247,0.12) 0%, transparent 100%);
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .section-content {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* ========================================
+           FORM ELEMENTS
+           ======================================== */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 9px 11px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: var(--font-sans);
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(77,171,247,0.15);
+        }
+
+        input[type="number"] {
+            width: 100%;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 70px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            line-height: 1.55;
+        }
+
+        /* Custom language input */
+        .custom-language-wrapper {
+            display: none;
+            margin-top: 6px;
+        }
+
+        .custom-language-wrapper.visible {
+            display: block;
+        }
+
+        /* Checkbox styling */
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 11px;
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+            transition: border-color var(--transition);
+            cursor: pointer;
+        }
+
+        .checkbox-group:hover {
+            border-color: var(--border-color);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 17px;
+            height: 17px;
+            margin-top: 1px;
+            accent-color: var(--accent-blue);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            flex: 1;
+            color: var(--text-primary);
+            font-size: 0.84rem;
+        }
+
+        .checkbox-group label small {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            margin-top: 2px;
+        }
+
+        /* Radio / Toggle styling */
+        .toggle-group {
+            display: flex;
+            gap: 0;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .toggle-group label {
+            flex: 1;
+            padding: 8px 14px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            transition: all var(--transition);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .toggle-group label:last-child {
+            border-right: none;
+        }
+
+        .toggle-group input[type="radio"] {
+            display: none;
+        }
+
+        .toggle-group input[type="radio"]:checked + label {
+            background: var(--accent-blue);
+            color: #fff;
+        }
+
+        /* ========================================
+           OUTPUT AREA
+           ======================================== */
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .output-header h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .output-stats {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        #generatedPrompt {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.7;
+            resize: none;
+            color: var(--text-primary);
+        }
+
+        #generatedPrompt:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        /* Tips */
+        .tips-section {
+            margin-top: 14px;
+            padding: 12px 14px;
+            background: rgba(251,146,60,0.08);
+            border: 1px solid rgba(251,146,60,0.25);
+            border-radius: var(--radius-md);
+        }
+
+        .tips-section h3 {
+            font-size: 0.75rem;
+            color: var(--accent-orange);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .tips-section h3::before {
+            content: '💡';
+        }
+
+        .tips-section ul {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            padding-left: 16px;
+        }
+
+        .tips-section li {
+            margin-bottom: 3px;
+        }
+
+        /* ========================================
+           BUTTONS
+           ======================================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+            font-family: var(--font-sans);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn:hover {
+            border-color: var(--text-muted);
+            background: var(--bg-secondary);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #3d9be6;
+            border-color: #3d9be6;
+        }
+
+        .btn-small {
+            padding: 6px 11px;
+            font-size: 0.78rem;
+        }
+
+        /* ========================================
+           ACTION BAR
+           ======================================== */
+        .action-bar {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Copy feedback */
+        .copy-feedback {
+            position: fixed;
+            bottom: 70px;
+            right: 24px;
+            background: var(--accent-green);
+            color: #fff;
+            padding: 11px 18px;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            font-size: 0.85rem;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            transform: translateY(16px);
+            transition: all 250ms ease;
+            pointer-events: none;
+        }
+
+        .copy-feedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ========================================
+           MODAL
+           ======================================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 180ms ease;
+            z-index: 1000;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 480px;
+            max-height: 80vh;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 180ms ease;
+        }
+
+        .modal-overlay.visible .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 18px;
+            overflow-y: auto;
+            max-height: 58vh;
+        }
+
+        .modal-footer {
+            padding: 14px 18px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Preset list */
+        .preset-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preset-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 11px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+        }
+
+        .preset-item-name {
+            font-weight: 500;
+            font-size: 0.88rem;
+        }
+
+        .preset-item-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .preset-item-badge {
+            font-size: 0.68rem;
+            padding: 2px 7px;
+            background: rgba(77,171,247,0.18);
+            color: var(--accent-blue);
+            border-radius: 8px;
+            margin-left: 8px;
+        }
+
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+        @media (max-width: 920px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .form-panel {
+                width: 100%;
+                max-width: none;
+                min-width: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                max-height: 52vh;
+            }
+
+            .output-panel {
+                min-height: 48vh;
+            }
+        }
+
+        /* ========================================
+           SCROLLBAR
+           ======================================== */
+        ::-webkit-scrollbar {
+            width: 9px;
+            height: 9px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ========================================
+             HEADER
+             ======================================== -->
+        <header class="header">
+            <div>
+                <h1>NotebookLM – Generátor promptů pro prezentace</h1>
+                <p class="header-subtitle">Generujte optimalizované prompty pro NotebookLM Studio → modul Slide Deck</p>
+            </div>
+            <div class="preset-controls">
+                <select id="presetSelect" class="preset-select">
+                    <option value="">— Vyberte preset —</option>
+                    <optgroup label="Vestavěné presety">
+                        <option value="__preset_usecases">10 případů použití – 3D Cut Paper</option>
+                        <option value="__preset_lesson">Výuková prezentace – Studenti – Začátečníci</option>
+                        <option value="__preset_workshop">Workshop – Učitelé – Středně pokročilí</option>
+                    </optgroup>
+                    <optgroup label="Vlastní presety" id="customPresetsGroup"></optgroup>
+                </select>
+                <button class="btn btn-small" onclick="openManagePresets()">⚙️ Spravovat</button>
+            </div>
+        </header>
+
+        <!-- ========================================
+             MAIN CONTENT
+             ======================================== -->
+        <main class="main-content">
+            <!-- Left Panel: Form -->
+            <div class="form-panel">
+                <form id="promptForm">
+
+                    <!-- SECTION 1: Output Configuration -->
+                    <section class="form-section">
+                        <div class="section-header">
+                            <span>📤</span> Nastavení výstupu
+                        </div>
+                        <div class="section-content">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="deckFormat">Formát prezentace</label>
+                                    <select id="deckFormat">
+                                        <option value="Presenter Deck">Presenter Deck (s poznámkami)</option>
+                                        <option value="Detailed Deck">Detailed Deck (podrobný)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="deckLength">Délka prezentace</label>
+                                    <select id="deckLength">
+                                        <option value="short">Krátká</option>
+                                        <option value="default" selected>Standardní</option>
+                                        <option value="long">Dlouhá</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="outputLanguage">Jazyk výstupu</label>
+                                <select id="outputLanguage">
+                                    <option value="Czech" selected>Čeština</option>
+                                    <option value="English">Angličtina</option>
+                                    <option value="German">Němčina</option>
+                                    <option value="French">Francouzština</option>
+                                    <option value="Spanish">Španělština</option>
+                                    <option value="custom">Vlastní...</option>
+                                </select>
+                                <div class="custom-language-wrapper" id="customLanguageWrapper">
+                                    <input type="text" id="customLanguage" placeholder="Zadejte vlastní jazyk...">
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 2: Core Content -->
+                    <section class="form-section">
+                        <div class="section-header">
+                            <span>📝</span> Hlavní obsah
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label for="topic">Téma / Název</label>
+                                <input type="text" id="topic" placeholder="např. Úvod do strojového učení">
+                            </div>
+                            <div class="form-group">
+                                <label for="primaryGoal">Hlavní cíl prezentace</label>
+                                <input type="text" id="primaryGoal" placeholder="např. Vysvětlit základní koncepty ML začátečníkům">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="targetAudience">Cílová skupina</label>
+                                    <input type="text" id="targetAudience" placeholder="např. Studenti vysokých škol">
+                                </div>
+                                <div class="form-group">
+                                    <label for="knowledgeLevel">Úroveň znalostí</label>
+                                    <select id="knowledgeLevel">
+                                        <option value="beginner">Začátečník</option>
+                                        <option value="intermediate" selected>Středně pokročilý</option>
+                                        <option value="advanced">Pokročilý</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="numSlides">Počet slidů</label>
+                                <input type="number" id="numSlides" value="10" min="3" max="60">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 3: Slide Rules -->
+                    <section class="form-section">
+                        <div class="section-header">
+                            <span>📋</span> Pravidla pro slidy
+                        </div>
+                        <div class="section-content">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="exactSlides" checked>
+                                <label for="exactSlides">
+                                    Generovat přesně N slidů
+                                    <small>Striktně dodržet zadaný počet slidů</small>
+                                </label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="oneIdea" checked>
+                                <label for="oneIdea">
+                                    Jedna myšlenka na slide
+                                    <small>Každý slide se zaměří na jeden koncept</small>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="bulletsPerSlide">Počet odrážek na slide</label>
+                                <input type="number" id="bulletsPerSlide" value="4" min="2" max="8">
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="speakerNotes" checked>
+                                <label for="speakerNotes">
+                                    Zahrnout poznámky pro přednášejícího
+                                    <small>Přidat poznámky ke každému slidu</small>
+                                </label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="noInventedFacts" checked>
+                                <label for="noInventedFacts">
+                                    Žádné vymyšlené fakty – pouze ze zdrojů
+                                    <small>Používat pouze informace z notebooku</small>
+                                </label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="noScreenshots" checked>
+                                <label for="noScreenshots">
+                                    Žádné screenshoty / UI prvky
+                                    <small>Vyhnout se screenshotům a mockupům</small>
+                                </label>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 4: Visual Style -->
+                    <section class="form-section">
+                        <div class="section-header">
+                            <span>🎨</span> Vizuální styl – Preset ilustrací
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label for="illustrationPreset">Styl ilustrací</label>
+                                <select id="illustrationPreset">
+                                    <option value="3d-cut-paper">3D Cut-Paper (vystřihovánky)</option>
+                                    <option value="flat-vector">Flat Vector Minimal (plochý vektor)</option>
+                                    <option value="watercolor">Watercolor Sketch (akvarel)</option>
+                                    <option value="isometric">Isometric 3D (izometrie)</option>
+                                    <option value="claymorphism">Claymorphism (modelína)</option>
+                                    <option value="retro-poster">Retro Poster (retro plakát)</option>
+                                    <option value="vintage-edu">Vintage Educational (učebnice)</option>
+                                    <option value="blueprint">Technical Blueprint (technický výkres)</option>
+                                    <option value="comic">Comic Panel (komiks)</option>
+                                    <option value="storybook">Storybook (pohádková kniha)</option>
+                                    <option value="collage">Collage (koláž)</option>
+                                    <option value="noir">Noir Minimal (temný minimalizmus)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 5: Atmosphere -->
+                    <section class="form-section">
+                        <div class="section-header">
+                            <span>🌈</span> Atmosféra / Tón
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label for="atmosphere">Atmosféra</label>
+                                <select id="atmosphere">
+                                    <option value="friendly">Přátelská a povzbudivá</option>
+                                    <option value="serious">Seriózní a profesionální</option>
+                                    <option value="academic">Akademická a důkladná</option>
+                                    <option value="playful">Hravá a vtipná</option>
+                                    <option value="inspirational">Inspirativní a povznášející</option>
+                                    <option value="calm">Klidná a minimalistická</option>
+                                    <option value="dramatic">Dramatická a filmová</option>
+                                    <option value="futuristic">Futuristická a elegantní</option>
+                                    <option value="historical">Historická a archivní</option>
+                                    <option value="cozy">Útulná a pohádková</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 6: Visual Consistency -->
+                    <section class="form-section">
+                        <div class="section-header">
+                            <span>🔒</span> Vizuální konzistence
+                        </div>
+                        <div class="section-content">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="visualConsistency" checked>
+                                <label for="visualConsistency">
+                                    Uzamknout vizuální konzistenci
+                                    <small>Zachovat stejný styl a atmosféru na všech slidech</small>
+                                </label>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 7: Visual Constraints -->
+                    <section class="form-section">
+                        <div class="section-header">
+                            <span>🚫</span> Vizuální omezení
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label for="visualConstraints">Vizuální omezení</label>
+                                <textarea id="visualConstraints">No screenshots, no photos, no icons. One illustration per slide.</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Úroveň omezení</label>
+                                <div class="toggle-group">
+                                    <input type="radio" name="constraintLevel" id="constraintNormal" value="normal" checked>
+                                    <label for="constraintNormal">Normální</label>
+                                    <input type="radio" name="constraintLevel" id="constraintStrict" value="strict">
+                                    <label for="constraintStrict">Přísná</label>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 8: Theme Pack -->
+                    <section class="form-section">
+                        <div class="section-header">
+                            <span>📚</span> Tematický balíček – Rámování obsahu
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label for="themePack">Tematický balíček</label>
+                                <select id="themePack">
+                                    <option value="education">Vzdělávání</option>
+                                    <option value="business">Business</option>
+                                    <option value="technology">Technologie</option>
+                                    <option value="history">Historie / Humanitní vědy</option>
+                                    <option value="kids">Děti / Mládež</option>
+                                    <option value="creative">Kreativní / Vyprávění příběhů</option>
+                                    <option value="legal">Právní / Politika</option>
+                                    <option value="science">Věda / Výzkum</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 9: Terminology Rules -->
+                    <section class="form-section">
+                        <div class="section-header">
+                            <span>📖</span> Pravidla terminologie
+                        </div>
+                        <div class="section-content">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="geminiNaming" checked>
+                                <label for="geminiNaming">
+                                    Používat pouze název „Gemini"
+                                    <small>Bez čísel modelů (1.5, 2.0, atd.)</small>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="additionalTerminology">Další pravidla terminologie</label>
+                                <textarea id="additionalTerminology" placeholder="např. Používat 'AI asistent' místo 'chatbot'..."></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                </form>
+            </div>
+
+            <!-- Right Panel: Output -->
+            <div class="output-panel">
+                <div class="output-header">
+                    <h2>Vygenerovaný prompt</h2>
+                    <span class="output-stats" id="outputStats">0 znaků</span>
+                </div>
+                <textarea id="generatedPrompt" readonly></textarea>
+                <div class="tips-section">
+                    <h3>Tipy pro lepší výsledky</h3>
+                    <ul>
+                        <li>Vyhněte se protichůdným vizuálním stylům (např. „minimalistický" + „detailní")</li>
+                        <li>Udržujte cíle konkrétní a měřitelné</li>
+                        <li>Vyberte tematický balíček odpovídající vaší cílové skupině</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+
+        <!-- ========================================
+             ACTION BAR
+             ======================================== -->
+        <footer class="action-bar">
+            <div class="action-group">
+                <button class="btn btn-primary" onclick="copyToClipboard()">📋 Kopírovat</button>
+                <button class="btn" onclick="resetForm()">🔄 Reset</button>
+            </div>
+            <div class="action-group">
+                <button class="btn" onclick="saveAsPreset()">💾 Uložit preset</button>
+                <button class="btn" onclick="openManagePresets()">📂 Načíst preset</button>
+                <button class="btn" onclick="exportPreset()">📤 Export JSON</button>
+                <button class="btn" onclick="document.getElementById('importFile').click()">📥 Import JSON</button>
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importPreset(event)">
+            </div>
+        </footer>
+    </div>
+
+    <!-- Copy Feedback Toast -->
+    <div class="copy-feedback" id="copyFeedback">✓ Zkopírováno do schránky!</div>
+
+    <!-- ========================================
+         MANAGE PRESETS MODAL
+         ======================================== -->
+    <div class="modal-overlay" id="managePresetsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Správa presetů</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="preset-list" id="presetList"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">Zavřít</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         JAVASCRIPT
+         ======================================== -->
+    <script>
+        // ========================================
+        // CONFIGURATION & CONSTANTS
+        // ========================================
+        const STORAGE_KEY = 'notebooklm_prompt_generator_state_v2';
+        const PRESETS_KEY = 'notebooklm_prompt_generator_presets_v2';
+
+        // Illustration style snippets (English for prompt)
+        const ILLUSTRATION_SNIPPETS = {
+            '3d-cut-paper': 'Layered paper-cut illustrations, soft shadows, handcrafted feel.',
+            'flat-vector': 'Clean flat vector illustrations, geometric shapes, minimal detail.',
+            'watercolor': 'Soft watercolor washes with hand-drawn sketch lines.',
+            'isometric': 'Clean isometric illustrations with subtle depth and perspective.',
+            'claymorphism': 'Clay-like 3D objects, playful rounded forms.',
+            'retro-poster': 'Mid-century poster style, bold shapes, print texture.',
+            'vintage-edu': 'Old textbook-style diagrams, muted colors, educational tone.',
+            'blueprint': 'Precise line-art diagrams, schematic blueprint style.',
+            'comic': 'Bold outlines, comic-style panels, simple shading.',
+            'storybook': 'Whimsical storybook illustrations, warm and friendly.',
+            'collage': 'Cutout collage style with magazine-like textures.',
+            'noir': 'High-contrast, moody, minimalist illustrations.'
+        };
+
+        // Atmosphere snippets (English for prompt)
+        const ATMOSPHERE_SNIPPETS = {
+            'friendly': 'Friendly and encouraging tone throughout.',
+            'serious': 'Serious and professional tone throughout.',
+            'academic': 'Academic and rigorous tone throughout.',
+            'playful': 'Playful and humorous tone throughout.',
+            'inspirational': 'Inspirational and uplifting tone throughout.',
+            'calm': 'Calm and minimalist tone throughout.',
+            'dramatic': 'Dramatic and cinematic tone throughout.',
+            'futuristic': 'Futuristic and sleek tone throughout.',
+            'historical': 'Historical and archival tone throughout.',
+            'cozy': 'Cozy and story-like tone throughout.'
+        };
+
+        // Theme pack snippets (English for prompt)
+        const THEME_PACK_SNIPPETS = {
+            'education': 'Use clear explanations, didactic structure, and teaching-oriented examples.',
+            'business': 'Focus on efficiency, decision-making, impact, and practical outcomes.',
+            'technology': 'Use precise terminology, workflows, and system-oriented explanations.',
+            'history': 'Provide context, narratives, causes and consequences.',
+            'kids': 'Use simple language, concrete examples, and easy metaphors.',
+            'creative': 'Frame content as a story with imagery and analogies.',
+            'legal': 'Use precise terminology, cautious language, and avoid metaphors or humor.',
+            'science': 'Use neutral tone, hypotheses, data-driven explanations, and methodology.'
+        };
+
+        // Built-in presets
+        const BUILT_IN_PRESETS = {
+            '__preset_usecases': {
+                name: '10 případů použití – 3D Cut Paper',
+                data: {
+                    deckFormat: 'Presenter Deck',
+                    deckLength: 'default',
+                    outputLanguage: 'Czech',
+                    customLanguage: '',
+                    topic: '10 praktických případů použití',
+                    primaryGoal: 'Demonstrovat praktické aplikace pomocí konkrétních příkladů',
+                    targetAudience: 'Manažeři a lidé s rozhodovací pravomocí',
+                    knowledgeLevel: 'intermediate',
+                    numSlides: 12,
+                    exactSlides: true,
+                    oneIdea: true,
+                    bulletsPerSlide: 3,
+                    speakerNotes: true,
+                    noInventedFacts: true,
+                    noScreenshots: true,
+                    illustrationPreset: '3d-cut-paper',
+                    atmosphere: 'friendly',
+                    visualConsistency: true,
+                    visualConstraints: 'No screenshots, no photos, no icons. One illustration per slide.',
+                    constraintLevel: 'normal',
+                    themePack: 'education',
+                    geminiNaming: true,
+                    additionalTerminology: ''
+                }
+            },
+            '__preset_lesson': {
+                name: 'Výuková prezentace – Studenti – Začátečníci',
+                data: {
+                    deckFormat: 'Presenter Deck',
+                    deckLength: 'long',
+                    outputLanguage: 'Czech',
+                    customLanguage: '',
+                    topic: 'Výuková lekce',
+                    primaryGoal: 'Naučit základní koncepty s jasnými vysvětleními',
+                    targetAudience: 'Studenti bez předchozích znalostí',
+                    knowledgeLevel: 'beginner',
+                    numSlides: 15,
+                    exactSlides: true,
+                    oneIdea: true,
+                    bulletsPerSlide: 4,
+                    speakerNotes: true,
+                    noInventedFacts: true,
+                    noScreenshots: true,
+                    illustrationPreset: 'storybook',
+                    atmosphere: 'friendly',
+                    visualConsistency: true,
+                    visualConstraints: 'No screenshots, no photos, no icons. One illustration per slide.',
+                    constraintLevel: 'normal',
+                    themePack: 'kids',
+                    geminiNaming: true,
+                    additionalTerminology: ''
+                }
+            },
+            '__preset_workshop': {
+                name: 'Workshop – Učitelé – Středně pokročilí',
+                data: {
+                    deckFormat: 'Detailed Deck',
+                    deckLength: 'default',
+                    outputLanguage: 'Czech',
+                    customLanguage: '',
+                    topic: 'Interaktivní workshop',
+                    primaryGoal: 'Provést učitele praktickými aktivitami',
+                    targetAudience: 'Učitelé a pedagogové s určitými zkušenostmi',
+                    knowledgeLevel: 'intermediate',
+                    numSlides: 10,
+                    exactSlides: true,
+                    oneIdea: true,
+                    bulletsPerSlide: 4,
+                    speakerNotes: false,
+                    noInventedFacts: true,
+                    noScreenshots: true,
+                    illustrationPreset: 'flat-vector',
+                    atmosphere: 'serious',
+                    visualConsistency: true,
+                    visualConstraints: 'No screenshots, no photos, no icons. One illustration per slide.',
+                    constraintLevel: 'strict',
+                    themePack: 'education',
+                    geminiNaming: true,
+                    additionalTerminology: ''
+                }
+            }
+        };
+
+        // Form field IDs (constraintLevel is handled separately as radio buttons)
+        const FORM_FIELDS = [
+            'deckFormat', 'deckLength', 'outputLanguage', 'customLanguage',
+            'topic', 'primaryGoal', 'targetAudience', 'knowledgeLevel', 'numSlides',
+            'exactSlides', 'oneIdea', 'bulletsPerSlide', 'speakerNotes',
+            'noInventedFacts', 'noScreenshots',
+            'illustrationPreset', 'atmosphere', 'visualConsistency',
+            'visualConstraints',
+            'themePack', 'geminiNaming', 'additionalTerminology'
+        ];
+
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            updateCustomPresetsList();
+            setupEventListeners();
+            generatePrompt();
+        });
+
+        /**
+         * Setup all event listeners
+         */
+        function setupEventListeners() {
+            // Form field changes
+            FORM_FIELDS.forEach(fieldId => {
+                const el = document.getElementById(fieldId);
+                if (el) {
+                    el.addEventListener('change', onFormChange);
+                    el.addEventListener('input', onFormChange);
+                }
+            });
+
+            // Radio buttons for constraint level
+            document.querySelectorAll('input[name="constraintLevel"]').forEach(radio => {
+                radio.addEventListener('change', onFormChange);
+            });
+
+            // Deck format changes speaker notes default
+            document.getElementById('deckFormat').addEventListener('change', (e) => {
+                const speakerNotes = document.getElementById('speakerNotes');
+                speakerNotes.checked = (e.target.value === 'Presenter Deck');
+                onFormChange();
+            });
+
+            // Custom language visibility
+            document.getElementById('outputLanguage').addEventListener('change', (e) => {
+                const wrapper = document.getElementById('customLanguageWrapper');
+                wrapper.classList.toggle('visible', e.target.value === 'custom');
+            });
+
+            // Preset selection
+            document.getElementById('presetSelect').addEventListener('change', (e) => {
+                if (e.target.value) {
+                    loadPreset(e.target.value);
+                }
+            });
+        }
+
+        /**
+         * Handle form change
+         */
+        function onFormChange() {
+            saveState();
+            generatePrompt();
+        }
+
+        // ========================================
+        // STATE MANAGEMENT
+        // ========================================
+
+        /**
+         * Get current form state
+         */
+        function getFormState() {
+            const state = {};
+            FORM_FIELDS.forEach(fieldId => {
+                const el = document.getElementById(fieldId);
+                if (el) {
+                    if (el.type === 'checkbox') {
+                        state[fieldId] = el.checked;
+                    } else if (el.type === 'number') {
+                        state[fieldId] = parseInt(el.value, 10);
+                    } else {
+                        state[fieldId] = el.value;
+                    }
+                }
+            });
+            // Handle radio buttons
+            const constraintRadio = document.querySelector('input[name="constraintLevel"]:checked');
+            state.constraintLevel = constraintRadio ? constraintRadio.value : 'normal';
+            return state;
+        }
+
+        /**
+         * Set form state
+         */
+        function setFormState(state) {
+            FORM_FIELDS.forEach(fieldId => {
+                const el = document.getElementById(fieldId);
+                if (el && state.hasOwnProperty(fieldId)) {
+                    if (el.type === 'checkbox') {
+                        el.checked = state[fieldId];
+                    } else {
+                        el.value = state[fieldId];
+                    }
+                }
+            });
+            // Handle radio buttons
+            if (state.constraintLevel) {
+                const radio = document.getElementById(state.constraintLevel === 'strict' ? 'constraintStrict' : 'constraintNormal');
+                if (radio) radio.checked = true;
+            }
+            // Handle custom language visibility
+            const wrapper = document.getElementById('customLanguageWrapper');
+            wrapper.classList.toggle('visible', state.outputLanguage === 'custom');
+        }
+
+        /**
+         * Save state to localStorage
+         */
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(getFormState()));
+            } catch (e) {
+                console.warn('Nepodařilo se uložit stav:', e);
+            }
+        }
+
+        /**
+         * Load state from localStorage
+         */
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    setFormState(JSON.parse(saved));
+                }
+            } catch (e) {
+                console.warn('Nepodařilo se načíst stav:', e);
+            }
+        }
+
+        /**
+         * Reset form
+         */
+        function resetForm() {
+            if (!confirm('Opravdu chcete resetovat všechna pole na výchozí hodnoty?')) return;
+
+            setFormState({
+                deckFormat: 'Presenter Deck',
+                deckLength: 'default',
+                outputLanguage: 'Czech',
+                customLanguage: '',
+                topic: '',
+                primaryGoal: '',
+                targetAudience: '',
+                knowledgeLevel: 'intermediate',
+                numSlides: 10,
+                exactSlides: true,
+                oneIdea: true,
+                bulletsPerSlide: 4,
+                speakerNotes: true,
+                noInventedFacts: true,
+                noScreenshots: true,
+                illustrationPreset: '3d-cut-paper',
+                atmosphere: 'friendly',
+                visualConsistency: true,
+                visualConstraints: 'No screenshots, no photos, no icons. One illustration per slide.',
+                constraintLevel: 'normal',
+                themePack: 'education',
+                geminiNaming: true,
+                additionalTerminology: ''
+            });
+
+            document.getElementById('presetSelect').value = '';
+            saveState();
+            generatePrompt();
+        }
+
+        // ========================================
+        // PROMPT GENERATION (English output)
+        // ========================================
+
+        /**
+         * Generate the final prompt
+         */
+        function generatePrompt() {
+            const state = getFormState();
+            const lines = [];
+
+            // Opening line
+            lines.push('Generate a Slide Deck from the provided notebook sources, using the following settings:');
+            lines.push('');
+
+            // === OUTPUT CONFIGURATION ===
+            lines.push('## Output Configuration');
+            lines.push(`- Format: ${state.deckFormat}`);
+            lines.push(`- Length: ${state.deckLength}`);
+            const language = state.outputLanguage === 'custom' && state.customLanguage
+                ? state.customLanguage
+                : state.outputLanguage;
+            lines.push(`- Language: ${language}`);
+            lines.push('');
+
+            // === PROMPT INSTRUCTIONS ===
+            lines.push('## Prompt Instructions');
+            if (state.topic) {
+                lines.push(`- Topic: ${state.topic}`);
+            }
+            if (state.primaryGoal) {
+                lines.push(`- Primary goal: ${state.primaryGoal}`);
+            }
+            if (state.targetAudience) {
+                lines.push(`- Target audience: ${state.targetAudience}`);
+            }
+            lines.push(`- Knowledge level: ${state.knowledgeLevel}`);
+            // Theme pack snippet
+            if (state.themePack && THEME_PACK_SNIPPETS[state.themePack]) {
+                lines.push(`- Content framing: ${THEME_PACK_SNIPPETS[state.themePack]}`);
+            }
+            lines.push('');
+
+            // === SLIDE STRUCTURE ===
+            lines.push('## Slide Structure');
+            if (state.exactSlides) {
+                lines.push(`- Generate exactly ${state.numSlides} slides (no more, no less)`);
+            } else {
+                lines.push(`- Target approximately ${state.numSlides} slides`);
+            }
+            if (state.oneIdea) {
+                lines.push('- One main idea per slide');
+            }
+            lines.push(`- Maximum ${state.bulletsPerSlide} bullet points per slide`);
+            if (state.speakerNotes) {
+                lines.push('- Include detailed speaker notes for each slide');
+            }
+            if (state.noInventedFacts) {
+                lines.push('- Only use facts grounded in the provided sources – do not invent information');
+            }
+            if (state.noScreenshots) {
+                lines.push('- No screenshots, no UI elements, no interface mockups');
+            }
+            lines.push('');
+
+            // === VISUAL & STYLE GUIDELINES ===
+            lines.push('## Visual & Style Guidelines');
+            // Illustration style
+            if (state.illustrationPreset && ILLUSTRATION_SNIPPETS[state.illustrationPreset]) {
+                lines.push(`- Illustration style: ${ILLUSTRATION_SNIPPETS[state.illustrationPreset]}`);
+            }
+            // Atmosphere
+            if (state.atmosphere && ATMOSPHERE_SNIPPETS[state.atmosphere]) {
+                lines.push(`- Atmosphere: ${ATMOSPHERE_SNIPPETS[state.atmosphere]}`);
+            }
+            // Visual consistency
+            if (state.visualConsistency) {
+                lines.push('- Keep the same illustration style and atmosphere consistent across all slides.');
+            }
+            // Visual constraints
+            if (state.visualConstraints) {
+                lines.push(`- Visual constraints: ${state.visualConstraints}`);
+            }
+            // Strict mode
+            if (state.constraintLevel === 'strict') {
+                lines.push('- Additional restrictions: No gradients, no logos, no brand marks, no UI-like elements.');
+            }
+            lines.push('');
+
+            // === NOTES ===
+            const hasNotes = state.geminiNaming || state.additionalTerminology;
+            if (hasNotes) {
+                lines.push('## Notes');
+                if (state.geminiNaming) {
+                    lines.push('- When referring to Gemini, always use only the name "Gemini" (no model numbers like 1.5, 2.0, etc.)');
+                }
+                if (state.additionalTerminology) {
+                    const termLines = state.additionalTerminology.split('\n').filter(l => l.trim());
+                    termLines.forEach(term => {
+                        lines.push(`- ${term.trim()}`);
+                    });
+                }
+                lines.push('');
+            }
+
+            // Closing
+            lines.push('Do not explain your process. Do not add extra slides.');
+
+            // Set output
+            const promptText = lines.join('\n');
+            document.getElementById('generatedPrompt').value = promptText;
+            document.getElementById('outputStats').textContent = `${promptText.length} znaků`;
+        }
+
+        // ========================================
+        // CLIPBOARD
+        // ========================================
+
+        async function copyToClipboard() {
+            const textarea = document.getElementById('generatedPrompt');
+            const text = textarea.value;
+            try {
+                await navigator.clipboard.writeText(text);
+                showCopyFeedback();
+            } catch (e) {
+                textarea.select();
+                document.execCommand('copy');
+                showCopyFeedback();
+            }
+        }
+
+        function showCopyFeedback() {
+            const feedback = document.getElementById('copyFeedback');
+            feedback.classList.add('show');
+            setTimeout(() => feedback.classList.remove('show'), 2000);
+        }
+
+        // ========================================
+        // PRESETS MANAGEMENT
+        // ========================================
+
+        function getCustomPresets() {
+            try {
+                const saved = localStorage.getItem(PRESETS_KEY);
+                return saved ? JSON.parse(saved) : {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveCustomPresets(presets) {
+            try {
+                localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+            } catch (e) {
+                console.warn('Nepodařilo se uložit presety:', e);
+            }
+        }
+
+        function updateCustomPresetsList() {
+            const group = document.getElementById('customPresetsGroup');
+            const presets = getCustomPresets();
+            group.innerHTML = '';
+            Object.keys(presets).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = presets[key].name;
+                group.appendChild(opt);
+            });
+        }
+
+        function loadPreset(key) {
+            let preset;
+            if (BUILT_IN_PRESETS[key]) {
+                preset = BUILT_IN_PRESETS[key];
+            } else {
+                const customPresets = getCustomPresets();
+                preset = customPresets[key];
+            }
+            if (preset && preset.data) {
+                setFormState(preset.data);
+                saveState();
+                generatePrompt();
+            }
+        }
+
+        function saveAsPreset() {
+            const name = prompt('Zadejte název presetu:');
+            if (!name || !name.trim()) return;
+            const key = 'custom_' + Date.now();
+            const presets = getCustomPresets();
+            presets[key] = {
+                name: name.trim(),
+                data: getFormState()
+            };
+            saveCustomPresets(presets);
+            updateCustomPresetsList();
+            document.getElementById('presetSelect').value = key;
+            alert('Preset byl uložen!');
+        }
+
+        function deletePreset(key) {
+            if (!confirm('Opravdu chcete smazat tento preset?')) return;
+            const presets = getCustomPresets();
+            delete presets[key];
+            saveCustomPresets(presets);
+            updateCustomPresetsList();
+            renderPresetList();
+            if (document.getElementById('presetSelect').value === key) {
+                document.getElementById('presetSelect').value = '';
+            }
+        }
+
+        function exportPreset() {
+            const state = getFormState();
+            const data = {
+                name: state.topic || 'Nepojmenovaný preset',
+                exportedAt: new Date().toISOString(),
+                data: state
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `notebooklm-preset-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importPreset(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.data) {
+                        const saveAsNew = confirm('Uložit jako nový preset? (Zrušit = načíst přímo)');
+                        if (saveAsNew) {
+                            const name = prompt('Zadejte název presetu:', imported.name || 'Importovaný preset');
+                            if (name) {
+                                const key = 'custom_' + Date.now();
+                                const presets = getCustomPresets();
+                                presets[key] = {
+                                    name: name.trim(),
+                                    data: imported.data
+                                };
+                                saveCustomPresets(presets);
+                                updateCustomPresetsList();
+                                document.getElementById('presetSelect').value = key;
+                            }
+                        }
+                        setFormState(imported.data);
+                        saveState();
+                        generatePrompt();
+                        alert('Preset byl úspěšně importován!');
+                    } else {
+                        alert('Neplatný formát souboru s presetem.');
+                    }
+                } catch (err) {
+                    alert('Nepodařilo se načíst JSON soubor: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ========================================
+        // MODAL
+        // ========================================
+
+        function openManagePresets() {
+            renderPresetList();
+            document.getElementById('managePresetsModal').classList.add('visible');
+        }
+
+        function closeModal() {
+            document.getElementById('managePresetsModal').classList.remove('visible');
+        }
+
+        function renderPresetList() {
+            const container = document.getElementById('presetList');
+            const customPresets = getCustomPresets();
+            let html = '';
+
+            // Built-in presets
+            Object.keys(BUILT_IN_PRESETS).forEach(key => {
+                const preset = BUILT_IN_PRESETS[key];
+                html += `
+                    <div class="preset-item">
+                        <span class="preset-item-name">
+                            ${preset.name}
+                            <span class="preset-item-badge">Vestavěný</span>
+                        </span>
+                        <div class="preset-item-actions">
+                            <button class="btn btn-small" onclick="loadPreset('${key}'); closeModal();">Načíst</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Custom presets
+            Object.keys(customPresets).forEach(key => {
+                const preset = customPresets[key];
+                html += `
+                    <div class="preset-item">
+                        <span class="preset-item-name">${preset.name}</span>
+                        <div class="preset-item-actions">
+                            <button class="btn btn-small" onclick="loadPreset('${key}'); closeModal();">Načíst</button>
+                            <button class="btn btn-small" onclick="deletePreset('${key}')">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (Object.keys(customPresets).length === 0) {
+                html += '<p style="color: var(--text-muted); text-align: center; padding: 16px;">Zatím nemáte žádné vlastní presety.</p>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Close modal on overlay click
+        document.getElementById('managePresetsModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeModal();
+            }
+        });
+
+        // Close on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+</html>
