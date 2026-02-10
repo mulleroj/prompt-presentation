@@ -797,18 +797,34 @@
                             <div class="form-group">
                                 <label for="illustrationPreset">Styl ilustrací</label>
                                 <select id="illustrationPreset">
-                                    <option value="3d-cut-paper">3D Cut-Paper (vystřihovánky)</option>
-                                    <option value="flat-vector">Flat Vector Minimal (plochý vektor)</option>
-                                    <option value="watercolor">Watercolor Sketch (akvarel)</option>
-                                    <option value="isometric">Isometric 3D (izometrie)</option>
-                                    <option value="claymorphism">Claymorphism (modelína)</option>
-                                    <option value="retro-poster">Retro Poster (retro plakát)</option>
-                                    <option value="vintage-edu">Vintage Educational (učebnice)</option>
-                                    <option value="blueprint">Technical Blueprint (technický výkres)</option>
-                                    <option value="comic">Comic Panel (komiks)</option>
-                                    <option value="storybook">Storybook (pohádková kniha)</option>
-                                    <option value="collage">Collage (koláž)</option>
-                                    <option value="noir">Noir Minimal (temný minimalizmus)</option>
+                                    <optgroup label="Kreativní / Umělecké">
+                                        <option value="3d-cut-paper">3D Cut-Paper (vystřihovánky)</option>
+                                        <option value="flat-vector">Flat Vector Minimal (plochý vektor)</option>
+                                        <option value="watercolor">Watercolor Sketch (akvarel)</option>
+                                        <option value="isometric">Isometric 3D (izometrie)</option>
+                                        <option value="claymorphism">Claymorphism (modelína)</option>
+                                        <option value="retro-poster">Retro Poster (retro plakát)</option>
+                                        <option value="comic">Comic Panel (komiks)</option>
+                                        <option value="storybook">Storybook (pohádková kniha)</option>
+                                        <option value="collage">Collage (koláž)</option>
+                                        <option value="noir">Noir Minimal (temný minimalizmus)</option>
+                                    </optgroup>
+                                    <optgroup label="Vzdělávací / Výkladové">
+                                        <option value="infographic-clean">Infographic Clean (čistá infografika)</option>
+                                        <option value="concept-map">Concept Map (myšlenkové mapy)</option>
+                                        <option value="step-by-step">Step-by-Step Diagram (postupová schémata)</option>
+                                        <option value="whiteboard">Whiteboard Illustration (tabule)</option>
+                                        <option value="textbook-modern">Textbook Modern (moderní učebnice)</option>
+                                        <option value="vintage-edu">Vintage Educational (klasická učebnice)</option>
+                                    </optgroup>
+                                    <optgroup label="Profesionální / Technické">
+                                        <option value="corporate-minimal">Corporate Minimal (firemní střízlivý)</option>
+                                        <option value="research-academic">Research / Academic (vědecký)</option>
+                                        <option value="legal-policy">Legal / Policy (formální dokumenty)</option>
+                                        <option value="blueprint">Technical Blueprint (technický výkres)</option>
+                                        <option value="engineering-diagram">Engineering Diagram (funkční nákres)</option>
+                                        <option value="data-storytelling">Data Storytelling (data bez grafů)</option>
+                                    </optgroup>
                                 </select>
                             </div>
                         </div>
@@ -990,18 +1006,31 @@
 
         // Illustration style snippets (English for prompt)
         const ILLUSTRATION_SNIPPETS = {
+            // Kreativní / Umělecké
             '3d-cut-paper': 'Layered paper-cut illustrations, soft shadows, handcrafted feel.',
             'flat-vector': 'Clean flat vector illustrations, geometric shapes, minimal detail.',
             'watercolor': 'Soft watercolor washes with hand-drawn sketch lines.',
             'isometric': 'Clean isometric illustrations with subtle depth and perspective.',
             'claymorphism': 'Clay-like 3D objects, playful rounded forms.',
             'retro-poster': 'Mid-century poster style, bold shapes, print texture.',
-            'vintage-edu': 'Old textbook-style diagrams, muted colors, educational tone.',
-            'blueprint': 'Precise line-art diagrams, schematic blueprint style.',
             'comic': 'Bold outlines, comic-style panels, simple shading.',
             'storybook': 'Whimsical storybook illustrations, warm and friendly.',
             'collage': 'Cutout collage style with magazine-like textures.',
-            'noir': 'High-contrast, moody, minimalist illustrations.'
+            'noir': 'High-contrast, moody, minimalist illustrations.',
+            // Vzdělávací / Výkladové
+            'infographic-clean': 'Clean infographic style, icons replaced with simple illustrations, clear visual hierarchy.',
+            'concept-map': 'Concept map style, connected ideas, visual thinking diagrams with linked nodes.',
+            'step-by-step': 'Step-by-step diagrams, process flows, numbered sequences with clear progression.',
+            'whiteboard': 'Whiteboard illustration style, hand-drawn explanations, teacher-at-board aesthetic.',
+            'textbook-modern': 'Modern textbook style, clean blocks, highlighted sections, structured layouts.',
+            'vintage-edu': 'Old textbook-style diagrams, muted colors, educational tone.',
+            // Profesionální / Technické
+            'corporate-minimal': 'Corporate minimal style, neutral tones, conservative and restrained visuals.',
+            'research-academic': 'Academic research style, scholarly diagrams, restrained and methodical visuals.',
+            'legal-policy': 'Formal document style, structured layouts, no metaphors, clear and precise.',
+            'blueprint': 'Precise line-art diagrams, schematic blueprint style.',
+            'engineering-diagram': 'Engineering diagram style, functional schematics, technical precision.',
+            'data-storytelling': 'Data storytelling without charts, explanatory visuals, numbers presented through imagery.'
         };
 
         // Atmosphere snippets (English for prompt)
