@@ -797,7 +797,7 @@
                             <div class="form-group">
                                 <label for="illustrationPreset">Styl ilustrací</label>
                                 <select id="illustrationPreset">
-                                    <optgroup label="Kreativní / Umělecké">
+                                    <optgroup label="🖌️ Ilustrační &amp; Výtvarné">
                                         <option value="3d-cut-paper">3D Cut-Paper (vystřihovánky)</option>
                                         <option value="flat-vector">Flat Vector Minimal (plochý vektor)</option>
                                         <option value="watercolor">Watercolor Sketch (akvarel)</option>
@@ -808,14 +808,35 @@
                                         <option value="storybook">Storybook (pohádková kniha)</option>
                                         <option value="collage">Collage (koláž)</option>
                                         <option value="noir">Noir Minimal (temný minimalizmus)</option>
+                                        <option value="paper-collage">Paper Collage Illustrative (papírová koláž)</option>
+                                        <option value="ink-line-art">Ink &amp; Line Art (perokresba)</option>
+                                        <option value="pastel-chalkboard">Pastel Chalkboard (křídová kresba)</option>
+                                        <option value="gouache">Gouache Illustration (gouache malba)</option>
+                                        <option value="soft-gradient">Soft Gradient Illustration (jemné přechody)</option>
                                     </optgroup>
-                                    <optgroup label="Příběhové / Konceptuální">
+                                    <optgroup label="🧠 Konceptuální &amp; Expresivní">
                                         <option value="narrative-visual">Narrative / Visual Story (příběh v obrazech)</option>
                                         <option value="journey-roadmap">Journey / Roadmap (cesta, vývoj)</option>
                                         <option value="metaphor-driven">Metaphor-Driven (metafory – mosty, cesty)</option>
                                         <option value="explainer-style">Explainer Style (jak to funguje)</option>
+                                        <option value="abstract-concept">Abstract Concept Art (abstraktní koncepty)</option>
+                                        <option value="surreal-edu">Surreal Educational (surrealistické metafory)</option>
+                                        <option value="symbolic-visual">Symbolic Visual Language (symbolický jazyk)</option>
+                                        <option value="minimal-metaphor">Minimal Metaphor (jedna silná metafora)</option>
                                     </optgroup>
-                                    <optgroup label="Vzdělávací / Výkladové">
+                                    <optgroup label="📚 Narativní &amp; Autorské">
+                                        <option value="illustrated-narrative">Illustrated Narrative (kapitoly příběhu)</option>
+                                        <option value="storyboard-frames">Storyboard Frames (filmové rámování)</option>
+                                        <option value="visual-diary">Visual Diary / Sketchbook (zápisník)</option>
+                                        <option value="journey-illustration">Journey Illustration (vizuální linka)</option>
+                                    </optgroup>
+                                    <optgroup label="🎭 Stylové / Atmosférické">
+                                        <option value="dreamlike">Dreamlike Soft Focus (snový styl)</option>
+                                        <option value="dark-academia">Dark Academia Visual (temný akademický)</option>
+                                        <option value="nordic-light">Light Nordic Illustration (severský minimalismus)</option>
+                                        <option value="boho-handcrafted">Boho Handcrafted (ruční organický)</option>
+                                    </optgroup>
+                                    <optgroup label="📖 Vzdělávací / Výkladové">
                                         <option value="infographic-clean">Infographic Clean (čistá infografika)</option>
                                         <option value="concept-map">Concept Map (myšlenkové mapy)</option>
                                         <option value="step-by-step">Step-by-Step Diagram (postupová schémata)</option>
@@ -823,12 +844,12 @@
                                         <option value="textbook-modern">Textbook Modern (moderní učebnice)</option>
                                         <option value="vintage-edu">Vintage Educational (klasická učebnice)</option>
                                     </optgroup>
-                                    <optgroup label="Pro děti / Školy">
+                                    <optgroup label="👶 Pro děti / Školy">
                                         <option value="kids-flat">Kids Educational Flat (jednoduché tvary)</option>
                                         <option value="playful-classroom">Playful Classroom (školní prostředí)</option>
                                         <option value="mascot-based">Mascot-Based (postava-průvodce)</option>
                                     </optgroup>
-                                    <optgroup label="Profesionální / Technické">
+                                    <optgroup label="💼 Profesionální / Technické">
                                         <option value="corporate-minimal">Corporate Minimal (firemní střízlivý)</option>
                                         <option value="research-academic">Research / Academic (vědecký)</option>
                                         <option value="legal-policy">Legal / Policy (formální dokumenty)</option>
@@ -1017,7 +1038,7 @@
 
         // Illustration style snippets (English for prompt)
         const ILLUSTRATION_SNIPPETS = {
-            // Kreativní / Umělecké
+            // 🖌️ Ilustrační & Výtvarné
             '3d-cut-paper': 'Layered paper-cut illustrations, soft shadows, handcrafted feel.',
             'flat-vector': 'Clean flat vector illustrations, geometric shapes, minimal detail.',
             'watercolor': 'Soft watercolor washes with hand-drawn sketch lines.',
@@ -1028,23 +1049,42 @@
             'storybook': 'Whimsical storybook illustrations, warm and friendly.',
             'collage': 'Cutout collage style with magazine-like textures.',
             'noir': 'High-contrast, moody, minimalist illustrations.',
-            // Příběhové / Konceptuální
+            'paper-collage': 'Hand-made paper collage style, layered textures, visible paper edges, torn paper aesthetic.',
+            'ink-line-art': 'Ink and line art style, black and white pen drawings, illustrative sketches, fine linework.',
+            'pastel-chalkboard': 'Pastel chalkboard style, chalk-drawn aesthetic, educational and warm, soft colors.',
+            'gouache': 'Gouache illustration style, full opaque colors, painterly aesthetic, slightly poster-like.',
+            'soft-gradient': 'Soft gradient illustrations, gentle color transitions, calm modern visual, no UI elements.',
+            // 🧠 Konceptuální & Expresivní
             'narrative-visual': 'Narrative visual story style, story split into sequential images, cinematic flow.',
             'journey-roadmap': 'Journey and roadmap style, path-based visuals, evolution and progression steps.',
             'metaphor-driven': 'Metaphor-driven visuals, concepts explained through bridges, paths, buildings, and symbolic imagery.',
             'explainer-style': 'Explainer illustration style, "how it works" diagrams, clear cause-and-effect visuals.',
-            // Vzdělávací / Výkladové
+            'abstract-concept': 'Abstract concept art, non-representational shapes expressing ideas, not reality.',
+            'surreal-edu': 'Surreal educational style, surrealist metaphors to explain concepts, dreamlike logic.',
+            'symbolic-visual': 'Symbolic visual language, icons replaced with meaningful illustrated symbols.',
+            'minimal-metaphor': 'Minimal metaphor style, one simple image equals one strong metaphor per slide.',
+            // 📚 Narativní & Autorské
+            'illustrated-narrative': 'Illustrated narrative style, each slide as a chapter illustration in a visual story.',
+            'storyboard-frames': 'Storyboard frames style, cinematic and comic-like framing, sequential visuals.',
+            'visual-diary': 'Visual diary and sketchbook style, personal hand-drawn feel, notebook aesthetic.',
+            'journey-illustration': 'Journey illustration style, visual path of transformation, progression line.',
+            // 🎭 Stylové / Atmosférické
+            'dreamlike': 'Dreamlike soft focus style, gentle blurred aesthetic, ethereal and calming.',
+            'dark-academia': 'Dark academia visual style, scholarly depth, books and thoughts, moody and intellectual.',
+            'nordic-light': 'Light Nordic illustration style, airy and minimal, Scandinavian simplicity, soft tones.',
+            'boho-handcrafted': 'Boho handcrafted style, organic shapes, warm earthy tones, artisan feel.',
+            // 📖 Vzdělávací / Výkladové
             'infographic-clean': 'Clean infographic style, icons replaced with simple illustrations, clear visual hierarchy.',
             'concept-map': 'Concept map style, connected ideas, visual thinking diagrams with linked nodes.',
             'step-by-step': 'Step-by-step diagrams, process flows, numbered sequences with clear progression.',
             'whiteboard': 'Whiteboard illustration style, hand-drawn explanations, teacher-at-board aesthetic.',
             'textbook-modern': 'Modern textbook style, clean blocks, highlighted sections, structured layouts.',
             'vintage-edu': 'Old textbook-style diagrams, muted colors, educational tone.',
-            // Pro děti / Školy
+            // 👶 Pro děti / Školy
             'kids-flat': 'Kids educational flat style, simple shapes, bright colors, friendly and approachable.',
             'playful-classroom': 'Playful classroom style, school environment visuals, chalkboards, notebooks, pencils.',
             'mascot-based': 'Mascot-based style, a friendly character guide appears across all slides as a narrator.',
-            // Profesionální / Technické
+            // 💼 Profesionální / Technické
             'corporate-minimal': 'Corporate minimal style, neutral tones, conservative and restrained visuals.',
             'research-academic': 'Academic research style, scholarly diagrams, restrained and methodical visuals.',
             'legal-policy': 'Formal document style, structured layouts, no metaphors, clear and precise.',
