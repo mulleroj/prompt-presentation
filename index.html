@@ -1219,6 +1219,204 @@
         ];
 
         // ========================================
+        // VALIDATION & NORMALIZATION (M1A – security)
+        // Central place that turns any untrusted input (imported JSON or
+        // localStorage) into a safe, allowlisted application state object.
+        // ========================================
+
+        // Documented limits (see M1A_SECURITY_REPORT.md).
+        const LIMITS = {
+            presetName: 100,     // preset name
+            shortText: 500,      // single-line inputs
+            longText: 20000,     // multi-line free-text (visual constraints, terminology)
+            maxPresets: 100      // stored custom presets
+        };
+
+        // Allowlisted enum values. Style/atmosphere/theme lists are derived
+        // from the snippet dictionaries so they cannot drift out of sync.
+        const ENUMS = {
+            deckFormat: ['Presenter Deck', 'Detailed Deck'],
+            deckLength: ['short', 'default', 'long'],
+            outputLanguage: ['Czech', 'English', 'German', 'French', 'Spanish', 'custom'],
+            knowledgeLevel: ['beginner', 'intermediate', 'advanced'],
+            illustrationPreset: Object.keys(ILLUSTRATION_SNIPPETS),
+            atmosphere: Object.keys(ATMOSPHERE_SNIPPETS),
+            themePack: Object.keys(THEME_PACK_SNIPPETS),
+            constraintLevel: ['normal', 'strict']
+        };
+
+        // Single source of truth for default values (also used by resetForm).
+        const DEFAULT_STATE = {
+            deckFormat: 'Presenter Deck',
+            deckLength: 'default',
+            outputLanguage: 'Czech',
+            customLanguage: '',
+            topic: '',
+            primaryGoal: '',
+            targetAudience: '',
+            knowledgeLevel: 'intermediate',
+            numSlides: 10,
+            exactSlides: true,
+            oneIdea: true,
+            bulletsPerSlide: 4,
+            speakerNotes: true,
+            noInventedFacts: true,
+            noScreenshots: true,
+            illustrationPreset: '3d-cut-paper',
+            atmosphere: 'friendly',
+            visualConsistency: true,
+            visualConstraints: 'No screenshots, no photos, no icons. One illustration per slide.',
+            constraintLevel: 'normal',
+            themePack: 'education',
+            geminiNaming: true,
+            additionalTerminology: ''
+        };
+
+        // Per-field normalization rules. Only keys listed here are ever
+        // copied into application state (explicit allowlist).
+        const FIELD_SCHEMA = {
+            deckFormat: { type: 'enum', values: ENUMS.deckFormat },
+            deckLength: { type: 'enum', values: ENUMS.deckLength },
+            outputLanguage: { type: 'enum', values: ENUMS.outputLanguage },
+            customLanguage: { type: 'string', max: LIMITS.shortText },
+            topic: { type: 'string', max: LIMITS.shortText },
+            primaryGoal: { type: 'string', max: LIMITS.shortText },
+            targetAudience: { type: 'string', max: LIMITS.shortText },
+            knowledgeLevel: { type: 'enum', values: ENUMS.knowledgeLevel },
+            numSlides: { type: 'number', min: 3, max: 60, integer: true },
+            exactSlides: { type: 'boolean' },
+            oneIdea: { type: 'boolean' },
+            bulletsPerSlide: { type: 'number', min: 2, max: 8, integer: true },
+            speakerNotes: { type: 'boolean' },
+            noInventedFacts: { type: 'boolean' },
+            noScreenshots: { type: 'boolean' },
+            illustrationPreset: { type: 'enum', values: ENUMS.illustrationPreset },
+            atmosphere: { type: 'enum', values: ENUMS.atmosphere },
+            visualConsistency: { type: 'boolean' },
+            visualConstraints: { type: 'string', max: LIMITS.longText },
+            constraintLevel: { type: 'enum', values: ENUMS.constraintLevel },
+            themePack: { type: 'enum', values: ENUMS.themePack },
+            geminiNaming: { type: 'boolean' },
+            additionalTerminology: { type: 'string', max: LIMITS.longText }
+        };
+
+        // Dangerous keys that must never be treated as data keys.
+        const FORBIDDEN_KEYS = ['__proto__', 'prototype', 'constructor'];
+
+        /** True only for real, plain (non-array, non-null) objects. */
+        function isPlainObject(value) {
+            if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+                return false;
+            }
+            const proto = Object.getPrototypeOf(value);
+            return proto === Object.prototype || proto === null;
+        }
+
+        /** Coerce to a string and clamp to maxLen; otherwise fall back. */
+        function normalizeString(value, maxLen, fallback) {
+            if (typeof value !== 'string') return fallback;
+            return value.length > maxLen ? value.slice(0, maxLen) : value;
+        }
+
+        /** Return value only if it is in the allowlist; otherwise fall back. */
+        function normalizeEnum(value, allowed, fallback) {
+            return (typeof value === 'string' && allowed.indexOf(value) !== -1) ? value : fallback;
+        }
+
+        /** Parse to a finite number, clamp to [min,max]; otherwise fall back. */
+        function normalizeNumber(value, min, max, fallback, integer) {
+            let n = value;
+            if (typeof n === 'string' && n.trim() !== '') n = Number(n);
+            if (typeof n !== 'number' || !isFinite(n)) return fallback;
+            if (integer) n = Math.round(n);
+            if (n < min) n = min;
+            if (n > max) n = max;
+            return n;
+        }
+
+        /** Accept only real booleans; otherwise fall back. */
+        function normalizeBoolean(value, fallback) {
+            return typeof value === 'boolean' ? value : fallback;
+        }
+
+        /**
+         * Build a fresh, safe state object from untrusted input.
+         * Iterates the allowlist (FIELD_SCHEMA) only and reads exclusively
+         * own properties, so unknown keys, inherited props and prototype
+         * pollution vectors (__proto__, constructor, ...) are never applied.
+         */
+        function normalizeState(raw, base) {
+            const source = isPlainObject(raw) ? raw : {};
+            const result = {};
+            Object.keys(FIELD_SCHEMA).forEach(key => {
+                const rule = FIELD_SCHEMA[key];
+                const def = base[key];
+                const hasOwn = Object.prototype.hasOwnProperty.call(source, key);
+                const val = hasOwn ? source[key] : undefined;
+                switch (rule.type) {
+                    case 'string':
+                        result[key] = normalizeString(val, rule.max, def);
+                        break;
+                    case 'enum':
+                        result[key] = normalizeEnum(val, rule.values, def);
+                        break;
+                    case 'number':
+                        result[key] = normalizeNumber(val, rule.min, rule.max, def, rule.integer);
+                        break;
+                    case 'boolean':
+                        result[key] = normalizeBoolean(val, def);
+                        break;
+                }
+            });
+            return result;
+        }
+
+        /**
+         * Normalize a whole custom-presets store loaded from localStorage.
+         * Keeps only valid entries, drops corrupt ones, strips forbidden
+         * keys and enforces the preset count limit.
+         */
+        function normalizePresetStore(raw) {
+            if (!isPlainObject(raw)) return {};
+            const clean = {};
+            let count = 0;
+            Object.keys(raw).forEach(key => {
+                if (count >= LIMITS.maxPresets) return;
+                if (FORBIDDEN_KEYS.indexOf(key) !== -1) return;
+                const entry = raw[key];
+                if (!isPlainObject(entry) || !isPlainObject(entry.data)) return;
+                const name = normalizeString(entry.name, LIMITS.presetName, '').trim();
+                if (!name) return; // skip nameless / invalid presets
+                clean[key] = { name: name, data: normalizeState(entry.data, DEFAULT_STATE) };
+                count++;
+            });
+            return clean;
+        }
+
+        /**
+         * Validate an imported preset file.
+         * Returns { ok:true, name, data } or { ok:false, reason } where reason is
+         * 'structure' (wrong root shape), 'data' (missing/invalid data object) or
+         * 'empty' (valid object but no recognized FIELD_SCHEMA field).
+         */
+        function validateAndNormalizePresetImport(parsed) {
+            if (!isPlainObject(parsed)) return { ok: false, reason: 'structure' };
+            if (!isPlainObject(parsed.data)) return { ok: false, reason: 'data' };
+            // Require at least one recognized field so that {} or unknown-only
+            // data is not silently accepted as "all defaults". Only schema keys
+            // are checked, so a __proto__-only payload counts as zero (rejected).
+            const recognized = Object.keys(FIELD_SCHEMA).filter(
+                key => Object.prototype.hasOwnProperty.call(parsed.data, key)
+            );
+            if (recognized.length === 0) return { ok: false, reason: 'empty' };
+            return {
+                ok: true,
+                name: normalizeString(parsed.name, LIMITS.presetName, '').trim(),
+                data: normalizeState(parsed.data, DEFAULT_STATE)
+            };
+        }
+
+        // ========================================
         // INITIALIZATION
         // ========================================
         document.addEventListener('DOMContentLoaded', () => {
@@ -1329,11 +1527,16 @@
         /**
          * Save state to localStorage
          */
+        // Returns true if the write succeeded, false if storage was
+        // unavailable/full. Callers doing an explicit save can report the
+        // real outcome; continuous auto-save callers may ignore it.
         function saveState() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(getFormState()));
+                return true;
             } catch (e) {
                 console.warn('Nepodařilo se uložit stav:', e);
+                return false;
             }
         }
 
@@ -1341,14 +1544,19 @@
          * Load state from localStorage
          */
         function loadState() {
+            let parsed;
             try {
                 const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    setFormState(JSON.parse(saved));
-                }
+                if (!saved) return;
+                parsed = JSON.parse(saved);
             } catch (e) {
-                console.warn('Nepodařilo se načíst stav:', e);
+                // Corrupt JSON: keep safe defaults, do not crash.
+                console.warn('Neplatná uložená data stavu – použity výchozí hodnoty.');
+                return;
             }
+            // Always normalize: unknown/invalid/out-of-range values are
+            // replaced by safe defaults; valid values are preserved.
+            setFormState(normalizeState(parsed, DEFAULT_STATE));
         }
 
         /**
@@ -1357,31 +1565,7 @@
         function resetForm() {
             if (!confirm('Opravdu chcete resetovat všechna pole na výchozí hodnoty?')) return;
 
-            setFormState({
-                deckFormat: 'Presenter Deck',
-                deckLength: 'default',
-                outputLanguage: 'Czech',
-                customLanguage: '',
-                topic: '',
-                primaryGoal: '',
-                targetAudience: '',
-                knowledgeLevel: 'intermediate',
-                numSlides: 10,
-                exactSlides: true,
-                oneIdea: true,
-                bulletsPerSlide: 4,
-                speakerNotes: true,
-                noInventedFacts: true,
-                noScreenshots: true,
-                illustrationPreset: '3d-cut-paper',
-                atmosphere: 'friendly',
-                visualConsistency: true,
-                visualConstraints: 'No screenshots, no photos, no icons. One illustration per slide.',
-                constraintLevel: 'normal',
-                themePack: 'education',
-                geminiNaming: true,
-                additionalTerminology: ''
-            });
+            setFormState({ ...DEFAULT_STATE });
 
             document.getElementById('presetSelect').value = '';
             saveState();
@@ -1530,26 +1714,34 @@
         // ========================================
 
         function getCustomPresets() {
+            let parsed;
             try {
                 const saved = localStorage.getItem(PRESETS_KEY);
-                return saved ? JSON.parse(saved) : {};
+                parsed = saved ? JSON.parse(saved) : {};
             } catch (e) {
+                // Corrupt JSON: behave as if there were no custom presets.
                 return {};
             }
+            // Drop invalid entries, normalize names/data, enforce the limit.
+            return normalizePresetStore(parsed);
         }
 
+        // Returns true if the write succeeded, false if storage was
+        // unavailable/full, so callers can avoid a false success message.
         function saveCustomPresets(presets) {
             try {
                 localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+                return true;
             } catch (e) {
                 console.warn('Nepodařilo se uložit presety:', e);
+                return false;
             }
         }
 
         function updateCustomPresetsList() {
             const group = document.getElementById('customPresetsGroup');
             const presets = getCustomPresets();
-            group.innerHTML = '';
+            group.textContent = '';
             Object.keys(presets).forEach(key => {
                 const opt = document.createElement('option');
                 opt.value = key;
@@ -1576,26 +1768,39 @@
         function saveAsPreset() {
             const name = prompt('Zadejte název presetu:');
             if (!name || !name.trim()) return;
-            const key = 'custom_' + Date.now();
             const presets = getCustomPresets();
+            if (Object.keys(presets).length >= LIMITS.maxPresets) {
+                alert('Nelze uložit: byl dosažen maximální počet uložených presetů (' + LIMITS.maxPresets + ').');
+                return;
+            }
+            const key = 'custom_' + Date.now();
+            const safeName = normalizeString(name, LIMITS.presetName, '').trim() || 'Preset';
             presets[key] = {
-                name: name.trim(),
-                data: getFormState()
+                name: safeName,
+                data: normalizeState(getFormState(), DEFAULT_STATE)
             };
-            saveCustomPresets(presets);
-            updateCustomPresetsList();
-            document.getElementById('presetSelect').value = key;
-            alert('Preset byl uložen!');
+            if (saveCustomPresets(presets)) {
+                updateCustomPresetsList();
+                document.getElementById('presetSelect').value = key;
+                alert('Preset byl uložen!');
+            } else {
+                alert('Preset se nepodařilo uložit do prohlížeče.');
+            }
         }
 
         function deletePreset(key) {
             if (!confirm('Opravdu chcete smazat tento preset?')) return;
             const presets = getCustomPresets();
             delete presets[key];
-            saveCustomPresets(presets);
+            const saved = saveCustomPresets(presets);
+            if (!saved) {
+                alert('Preset se nepodařilo odstranit z úložiště prohlížeče.');
+            }
+            // Re-render from actual storage: on failure the preset truthfully
+            // reappears; on success it is gone.
             updateCustomPresetsList();
             renderPresetList();
-            if (document.getElementById('presetSelect').value === key) {
+            if (saved && document.getElementById('presetSelect').value === key) {
                 document.getElementById('presetSelect').value = '';
             }
         }
@@ -1621,33 +1826,62 @@
             if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
+                // 1) Parse — reject anything that is not valid JSON.
+                let parsed;
                 try {
-                    const imported = JSON.parse(e.target.result);
-                    if (imported.data) {
-                        const saveAsNew = confirm('Uložit jako nový preset? (Zrušit = načíst přímo)');
-                        if (saveAsNew) {
-                            const name = prompt('Zadejte název presetu:', imported.name || 'Importovaný preset');
-                            if (name) {
-                                const key = 'custom_' + Date.now();
-                                const presets = getCustomPresets();
-                                presets[key] = {
-                                    name: name.trim(),
-                                    data: imported.data
-                                };
-                                saveCustomPresets(presets);
+                    parsed = JSON.parse(e.target.result);
+                } catch (err) {
+                    alert('Import se nezdařil: soubor není platný JSON.');
+                    return;
+                }
+                // 2) Validate structure and normalize into an allowlisted object.
+                //    On failure the current application state is left untouched.
+                const validated = validateAndNormalizePresetImport(parsed);
+                if (!validated.ok) {
+                    let msg;
+                    if (validated.reason === 'structure') {
+                        msg = 'Import se nezdařil: soubor nemá podporovanou strukturu presetu.';
+                    } else if (validated.reason === 'empty') {
+                        msg = 'Import se nezdařil: soubor neobsahuje žádná podporovaná nastavení.';
+                    } else {
+                        msg = 'Import se nezdařil: soubor obsahuje neplatná nebo nepodporovaná data.';
+                    }
+                    alert(msg);
+                    return;
+                }
+                // 3) Only the safe, normalized object is used from here on.
+                let presetSaveFailed = false;
+                const saveAsNew = confirm('Uložit jako nový preset? (Zrušit = načíst přímo)');
+                if (saveAsNew) {
+                    const name = prompt('Zadejte název presetu:', validated.name || 'Importovaný preset');
+                    if (name) {
+                        const presets = getCustomPresets();
+                        if (Object.keys(presets).length >= LIMITS.maxPresets) {
+                            alert('Nelze uložit: byl dosažen maximální počet uložených presetů (' + LIMITS.maxPresets + '). Preset bude pouze načten.');
+                        } else {
+                            const key = 'custom_' + Date.now();
+                            presets[key] = {
+                                name: normalizeString(name, LIMITS.presetName, '').trim() || 'Importovaný preset',
+                                data: validated.data
+                            };
+                            if (saveCustomPresets(presets)) {
                                 updateCustomPresetsList();
                                 document.getElementById('presetSelect').value = key;
+                            } else {
+                                presetSaveFailed = true;
                             }
                         }
-                        setFormState(imported.data);
-                        saveState();
-                        generatePrompt();
-                        alert('Preset byl úspěšně importován!');
-                    } else {
-                        alert('Neplatný formát souboru s presetem.');
                     }
-                } catch (err) {
-                    alert('Nepodařilo se načíst JSON soubor: ' + err.message);
+                }
+                // Load into the form (in-memory) and try to persist that state.
+                setFormState(validated.data);
+                const stateSaved = saveState();
+                generatePrompt();
+                // Report the real outcome: only claim persistence if it happened.
+                if (stateSaved && !presetSaveFailed) {
+                    alert('Preset byl úspěšně importován!');
+                } else {
+                    alert('Import byl načten, ale nepodařilo se jej uložit do prohlížeče. Po obnovení stránky se nemusí zachovat.');
                 }
             };
             reader.readAsText(file);
@@ -1667,46 +1901,71 @@
             document.getElementById('managePresetsModal').classList.remove('visible');
         }
 
+        // Build one preset row entirely via DOM APIs. User-controlled values
+        // (preset name) are set with textContent only, and the preset key is
+        // captured in a closure – never interpolated into HTML or an inline
+        // handler – so no untrusted data can be parsed as markup or script.
+        function buildPresetRow(name, key, isBuiltIn) {
+            const item = document.createElement('div');
+            item.className = 'preset-item';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'preset-item-name';
+            nameSpan.textContent = name;
+            if (isBuiltIn) {
+                const badge = document.createElement('span');
+                badge.className = 'preset-item-badge';
+                badge.textContent = 'Vestavěný';
+                nameSpan.appendChild(document.createTextNode(' '));
+                nameSpan.appendChild(badge);
+            }
+
+            const actions = document.createElement('div');
+            actions.className = 'preset-item-actions';
+
+            const loadBtn = document.createElement('button');
+            loadBtn.className = 'btn btn-small';
+            loadBtn.textContent = 'Načíst';
+            loadBtn.addEventListener('click', () => { loadPreset(key); closeModal(); });
+            actions.appendChild(loadBtn);
+
+            if (!isBuiltIn) {
+                const delBtn = document.createElement('button');
+                delBtn.className = 'btn btn-small';
+                delBtn.textContent = '🗑️';
+                delBtn.addEventListener('click', () => deletePreset(key));
+                actions.appendChild(delBtn);
+            }
+
+            item.appendChild(nameSpan);
+            item.appendChild(actions);
+            return item;
+        }
+
         function renderPresetList() {
             const container = document.getElementById('presetList');
             const customPresets = getCustomPresets();
-            let html = '';
+            container.textContent = ''; // clear safely (no innerHTML)
 
             // Built-in presets
             Object.keys(BUILT_IN_PRESETS).forEach(key => {
-                const preset = BUILT_IN_PRESETS[key];
-                html += `
-                    <div class="preset-item">
-                        <span class="preset-item-name">
-                            ${preset.name}
-                            <span class="preset-item-badge">Vestavěný</span>
-                        </span>
-                        <div class="preset-item-actions">
-                            <button class="btn btn-small" onclick="loadPreset('${key}'); closeModal();">Načíst</button>
-                        </div>
-                    </div>
-                `;
+                container.appendChild(buildPresetRow(BUILT_IN_PRESETS[key].name, key, true));
             });
 
             // Custom presets
-            Object.keys(customPresets).forEach(key => {
-                const preset = customPresets[key];
-                html += `
-                    <div class="preset-item">
-                        <span class="preset-item-name">${preset.name}</span>
-                        <div class="preset-item-actions">
-                            <button class="btn btn-small" onclick="loadPreset('${key}'); closeModal();">Načíst</button>
-                            <button class="btn btn-small" onclick="deletePreset('${key}')">🗑️</button>
-                        </div>
-                    </div>
-                `;
+            const customKeys = Object.keys(customPresets);
+            customKeys.forEach(key => {
+                container.appendChild(buildPresetRow(customPresets[key].name, key, false));
             });
 
-            if (Object.keys(customPresets).length === 0) {
-                html += '<p style="color: var(--text-muted); text-align: center; padding: 16px;">Zatím nemáte žádné vlastní presety.</p>';
+            if (customKeys.length === 0) {
+                const empty = document.createElement('p');
+                empty.style.color = 'var(--text-muted)';
+                empty.style.textAlign = 'center';
+                empty.style.padding = '16px';
+                empty.textContent = 'Zatím nemáte žádné vlastní presety.';
+                container.appendChild(empty);
             }
-
-            container.innerHTML = html;
         }
 
         // Close modal on overlay click
