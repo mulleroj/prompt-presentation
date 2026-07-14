@@ -303,13 +303,27 @@
             border-right: none;
         }
 
+        /* Visually hidden but still focusable and exposed to screen readers
+           (do NOT use display:none / visibility:hidden – that removes it from
+           the tab order and the accessibility tree). */
         .toggle-group input[type="radio"] {
-            display: none;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            margin: 0;
+            pointer-events: none;
         }
 
         .toggle-group input[type="radio"]:checked + label {
             background: var(--accent-blue);
             color: #fff;
+        }
+
+        /* Visible keyboard focus for the toggle: ring on the associated label. */
+        .toggle-group input[type="radio"]:focus-visible + label {
+            outline: 2px solid var(--border-focus);
+            outline-offset: -2px;
         }
 
         /* ========================================
@@ -488,7 +502,9 @@
             justify-content: center;
             opacity: 0;
             visibility: hidden;
-            transition: all 180ms ease;
+            /* Transition opacity only, so `visibility` flips instantly and the
+               dialog is focusable in the same tick it becomes visible. */
+            transition: opacity 180ms ease;
             z-index: 1000;
         }
 
@@ -590,6 +606,36 @@
         }
 
         /* ========================================
+           ACCESSIBILITY
+           ======================================== */
+        /* Visible keyboard focus for interactive controls. */
+        .btn:focus-visible,
+        .modal-close:focus-visible,
+        select:focus-visible,
+        .checkbox-group input[type="checkbox"]:focus-visible {
+            outline: 2px solid var(--border-focus);
+            outline-offset: 2px;
+        }
+
+        /* Screen-reader-only content (kept out of the visual layout). */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Error variant of the status toast. */
+        .copy-feedback.is-error {
+            background: var(--accent-red);
+        }
+
+        /* ========================================
            RESPONSIVE
            ======================================== */
         @media (max-width: 920px) {
@@ -631,6 +677,22 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--text-muted);
         }
+
+        /* ========================================
+           REDUCED MOTION
+           Respect users who ask for less motion: make transitions and
+           animations effectively instant while keeping state changes visible.
+           ======================================== */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -644,7 +706,7 @@
                 <p class="header-subtitle">Generujte optimalizované prompty pro NotebookLM Studio → modul Slide Deck</p>
             </div>
             <div class="preset-controls">
-                <select id="presetSelect" class="preset-select">
+                <select id="presetSelect" class="preset-select" aria-label="Vyberte uložený preset">
                     <option value="">— Vyberte preset —</option>
                     <optgroup label="Vestavěné presety">
                         <option value="__preset_usecases">10 případů použití – 3D Cut Paper</option>
@@ -913,8 +975,8 @@
                                 <textarea id="visualConstraints">No screenshots, no photos, no icons. One illustration per slide.</textarea>
                             </div>
                             <div class="form-group">
-                                <label>Úroveň omezení</label>
-                                <div class="toggle-group">
+                                <label id="constraintLevelLabel">Úroveň omezení</label>
+                                <div class="toggle-group" role="radiogroup" aria-labelledby="constraintLevelLabel">
                                     <input type="radio" name="constraintLevel" id="constraintNormal" value="normal" checked>
                                     <label for="constraintNormal">Normální</label>
                                     <input type="radio" name="constraintLevel" id="constraintStrict" value="strict">
@@ -1005,23 +1067,49 @@
         </footer>
     </div>
 
-    <!-- Copy Feedback Toast -->
-    <div class="copy-feedback" id="copyFeedback">✓ Zkopírováno do schránky!</div>
+    <!-- Status toast doubling as a polite screen-reader live region.
+         Text is set by showStatus(); role/aria-live announce it to AT. -->
+    <div class="copy-feedback" id="copyFeedback" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- ========================================
          MANAGE PRESETS MODAL
          ======================================== -->
     <div class="modal-overlay" id="managePresetsModal">
-        <div class="modal">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="managePresetsTitle">
             <div class="modal-header">
-                <h3>Správa presetů</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <h3 id="managePresetsTitle">Správa presetů</h3>
+                <button class="modal-close" onclick="closeModal()" aria-label="Zavřít dialog">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="preset-list" id="presetList"></div>
             </div>
             <div class="modal-footer">
                 <button class="btn" onclick="closeModal()">Zavřít</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         GENERIC ACCESSIBLE DIALOG
+         Replaces native alert/confirm/prompt for the prioritized flows
+         (preset name entry, delete confirmation). Driven by showDialog().
+         ======================================== -->
+    <div class="modal-overlay" id="appDialog">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="appDialogTitle" aria-describedby="appDialogMessage">
+            <div class="modal-header">
+                <h3 id="appDialogTitle"></h3>
+                <button class="modal-close" id="appDialogClose" type="button" aria-label="Zavřít dialog">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="appDialogMessage"></p>
+                <div class="form-group" id="appDialogInputWrap" style="margin-top:12px;">
+                    <label for="appDialogInput" id="appDialogInputLabel" class="sr-only">Hodnota</label>
+                    <input type="text" id="appDialogInput">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="appDialogCancel" type="button"></button>
+                <button class="btn btn-primary" id="appDialogConfirm" type="button"></button>
             </div>
         </div>
     </div>
@@ -1117,6 +1205,26 @@
             'creative': 'Frame content as a story with imagery and analogies.',
             'legal': 'Use precise terminology, cautious language, and avoid metaphors or humor.',
             'science': 'Use neutral tone, hypotheses, data-driven explanations, and methodology.'
+        };
+
+        // Human-readable prompt instructions for internal enum keys, so the
+        // generated prompt never leaks raw values like "default" or "beginner".
+        // Format labels describe ONLY the deck format; the speaker-notes rule is
+        // emitted separately and conditionally (see generatePrompt) so it never
+        // duplicates the format description or contradicts the checkbox.
+        const FORMAT_PROMPT_LABELS = {
+            'Presenter Deck': 'Presenter deck – concise slides that support a spoken presentation.',
+            'Detailed Deck': 'Detailed deck – slides carry the full explanation on their own.'
+        };
+        const LENGTH_PROMPT_LABELS = {
+            'short': 'Keep the deck concise – include only the most essential points.',
+            'default': 'Use a balanced length appropriate to the source material.',
+            'long': 'Create a more thorough deck with enough depth and explanation.'
+        };
+        const KNOWLEDGE_PROMPT_LABELS = {
+            'beginner': 'beginners with little or no prior knowledge',
+            'intermediate': 'an audience with some background knowledge',
+            'advanced': 'an advanced, well-informed audience'
         };
 
         // Built-in presets
@@ -1562,14 +1670,21 @@
         /**
          * Reset form
          */
-        function resetForm() {
-            if (!confirm('Opravdu chcete resetovat všechna pole na výchozí hodnoty?')) return;
+        async function resetForm() {
+            const ok = await showDialog({
+                title: 'Obnovit výchozí hodnoty',
+                message: 'Opravdu chcete obnovit všechna pole na výchozí hodnoty?',
+                confirmText: 'Obnovit',
+                cancelText: 'Zrušit'
+            });
+            if (!ok) return;
 
             setFormState({ ...DEFAULT_STATE });
 
             document.getElementById('presetSelect').value = '';
             saveState();
             generatePrompt();
+            showStatus('Nastavení bylo obnoveno na výchozí hodnoty.');
         }
 
         // ========================================
@@ -1583,102 +1698,103 @@
             const state = getFormState();
             const lines = [];
 
-            // Opening line
-            lines.push('Generate a Slide Deck from the provided notebook sources, using the following settings:');
-            lines.push('');
-
-            // === OUTPUT CONFIGURATION ===
-            lines.push('## Output Configuration');
-            lines.push(`- Format: ${state.deckFormat}`);
-            lines.push(`- Length: ${state.deckLength}`);
-            const language = state.outputLanguage === 'custom' && state.customLanguage
-                ? state.customLanguage
-                : state.outputLanguage;
-            lines.push(`- Language: ${language}`);
-            lines.push('');
-
-            // === PROMPT INSTRUCTIONS ===
-            lines.push('## Prompt Instructions');
-            if (state.topic) {
-                lines.push(`- Topic: ${state.topic}`);
-            }
-            if (state.primaryGoal) {
-                lines.push(`- Primary goal: ${state.primaryGoal}`);
-            }
-            if (state.targetAudience) {
-                lines.push(`- Target audience: ${state.targetAudience}`);
-            }
-            lines.push(`- Knowledge level: ${state.knowledgeLevel}`);
-            // Theme pack snippet
-            if (state.themePack && THEME_PACK_SNIPPETS[state.themePack]) {
-                lines.push(`- Content framing: ${THEME_PACK_SNIPPETS[state.themePack]}`);
-            }
-            lines.push('');
-
-            // === SLIDE STRUCTURE ===
-            lines.push('## Slide Structure');
-            if (state.exactSlides) {
-                lines.push(`- Generate exactly ${state.numSlides} slides (no more, no less)`);
-            } else {
-                lines.push(`- Target approximately ${state.numSlides} slides`);
-            }
-            if (state.oneIdea) {
-                lines.push('- One main idea per slide');
-            }
-            lines.push(`- Maximum ${state.bulletsPerSlide} bullet points per slide`);
-            if (state.speakerNotes) {
-                lines.push('- Include detailed speaker notes for each slide');
-            }
-            if (state.noInventedFacts) {
-                lines.push('- Only use facts grounded in the provided sources – do not invent information');
-            }
-            if (state.noScreenshots) {
-                lines.push('- No screenshots, no UI elements, no interface mockups');
-            }
-            lines.push('');
-
-            // === VISUAL & STYLE GUIDELINES ===
-            lines.push('## Visual & Style Guidelines');
-            // Illustration style
-            if (state.illustrationPreset && ILLUSTRATION_SNIPPETS[state.illustrationPreset]) {
-                lines.push(`- Illustration style: ${ILLUSTRATION_SNIPPETS[state.illustrationPreset]}`);
-            }
-            // Atmosphere
-            if (state.atmosphere && ATMOSPHERE_SNIPPETS[state.atmosphere]) {
-                lines.push(`- Atmosphere: ${ATMOSPHERE_SNIPPETS[state.atmosphere]}`);
-            }
-            // Visual consistency
-            if (state.visualConsistency) {
-                lines.push('- Keep the same illustration style and atmosphere consistent across all slides.');
-            }
-            // Visual constraints
-            if (state.visualConstraints) {
-                lines.push(`- Visual constraints: ${state.visualConstraints}`);
-            }
-            // Strict mode
-            if (state.constraintLevel === 'strict') {
-                lines.push('- Additional restrictions: No gradients, no logos, no brand marks, no UI-like elements.');
-            }
-            lines.push('');
-
-            // === NOTES ===
-            const hasNotes = state.geminiNaming || state.additionalTerminology;
-            if (hasNotes) {
-                lines.push('## Notes');
-                if (state.geminiNaming) {
-                    lines.push('- When referring to Gemini, always use only the name "Gemini" (no model numbers like 1.5, 2.0, etc.)');
-                }
-                if (state.additionalTerminology) {
-                    const termLines = state.additionalTerminology.split('\n').filter(l => l.trim());
-                    termLines.forEach(term => {
-                        lines.push(`- ${term.trim()}`);
-                    });
-                }
+            // Append a "## Title" section only when it has at least one line,
+            // so empty/optional sections never produce a bare header.
+            function section(title, items) {
+                const nonEmpty = items.filter(Boolean);
+                if (nonEmpty.length === 0) return;
+                lines.push('## ' + title);
+                nonEmpty.forEach(i => lines.push(i));
                 lines.push('');
             }
 
-            // Closing
-            lines.push('Do not explain your process. Do not add extra slides.');
+            // 1) Role & main task (generator instruction, not user content).
+            //    The "do not invent" rule is handled once, conditionally, in the
+            //    Slide Structure section so it never duplicates or conflicts.
+            lines.push('You are creating a slide deck in NotebookLM Studio from the provided notebook sources.');
+            lines.push('Apply the configuration below.');
+            lines.push('');
+
+            // 2) Topic & goal – values supplied by the user (clearly marked).
+            section('Presentation Topic', [
+                state.topic ? `- Topic (provided by the user): ${state.topic}` : '',
+                state.primaryGoal ? `- Primary goal (provided by the user): ${state.primaryGoal}` : ''
+            ]);
+
+            // 3) Audience & purpose.
+            section('Audience & Purpose', [
+                `- Pitch the content for ${KNOWLEDGE_PROMPT_LABELS[state.knowledgeLevel] || state.knowledgeLevel}.`,
+                state.targetAudience ? `- Target audience (provided by the user): ${state.targetAudience}` : '',
+                THEME_PACK_SNIPPETS[state.themePack] ? `- Content framing: ${THEME_PACK_SNIPPETS[state.themePack]}` : ''
+            ]);
+
+            // 4) Language & length (mapped to natural instructions, no raw enums).
+            //    For a custom language use the trimmed value; if it is empty,
+            //    omit the language line entirely (never leak the internal
+            //    "custom" key) and let the language follow the source content.
+            const language = state.outputLanguage === 'custom'
+                ? (state.customLanguage || '').trim()
+                : state.outputLanguage;
+            section('Language & Length', [
+                language ? `- Output language: ${language}.` : '',
+                `- Format: ${FORMAT_PROMPT_LABELS[state.deckFormat] || state.deckFormat}`,
+                `- Length: ${LENGTH_PROMPT_LABELS[state.deckLength] || state.deckLength}`
+            ]);
+
+            // 5) Slide structure.
+            section('Slide Structure', [
+                state.exactSlides
+                    ? `- Produce exactly ${state.numSlides} slides (no more, no less).`
+                    : `- Aim for approximately ${state.numSlides} slides.`,
+                state.oneIdea ? '- One main idea per slide.' : '',
+                `- At most ${state.bulletsPerSlide} bullet points per slide.`,
+                state.speakerNotes ? '- Include detailed speaker notes for each slide.' : '',
+                state.noInventedFacts ? '- Use only facts grounded in the provided sources; do not invent information.' : ''
+            ]);
+
+            // 6) Visual style.
+            section('Visual Style', [
+                ILLUSTRATION_SNIPPETS[state.illustrationPreset] ? `- Illustration style: ${ILLUSTRATION_SNIPPETS[state.illustrationPreset]}` : '',
+                ATMOSPHERE_SNIPPETS[state.atmosphere] ? `- Atmosphere: ${ATMOSPHERE_SNIPPETS[state.atmosphere]}` : ''
+            ]);
+
+            // 7) Text & readability.
+            section('Text & Readability', [
+                '- Keep on-slide text short and scannable; prefer concise phrases over full paragraphs.',
+                '- Ensure text stays clearly legible against the illustrations.'
+            ]);
+
+            // 8) Image rules – each general restriction is added at most once.
+            //    The user's free-text constraints are respected verbatim; the
+            //    "no screenshots" rule is only added when the user hasn't already
+            //    stated it (targeted known-concept check, not text dedup).
+            const vc = (state.visualConstraints || '').trim();
+            const imageRules = [];
+            if (vc) imageRules.push(`- ${vc}`);
+            if (state.noScreenshots && !/screenshot/i.test(vc)) {
+                imageRules.push('- No screenshots, UI mockups, or interface elements.');
+            }
+            if (state.constraintLevel === 'strict') {
+                imageRules.push('- Strict mode: no gradients, no logos, and no brand marks.');
+            }
+            section('Image Rules', imageRules);
+
+            // 9) Terminology & notes (user content clearly under its own header).
+            const notes = [];
+            if (state.geminiNaming) {
+                notes.push('- When referring to Gemini, use only the name "Gemini" (no version numbers such as 1.5 or 2.0).');
+            }
+            if (state.additionalTerminology) {
+                state.additionalTerminology.split('\n').map(l => l.trim()).filter(Boolean)
+                    .forEach(term => notes.push(`- ${term}`));
+            }
+            section('Terminology & Notes', notes);
+
+            // 10) Final consistency & closing instruction.
+            if (state.visualConsistency) {
+                lines.push('Keep the illustration style and atmosphere consistent across every slide.');
+            }
+            lines.push('Do not explain your process and do not add extra slides.');
 
             // Set output
             const promptText = lines.join('\n');
@@ -1695,18 +1811,130 @@
             const text = textarea.value;
             try {
                 await navigator.clipboard.writeText(text);
-                showCopyFeedback();
+                showStatus('✓ Zkopírováno do schránky.');
             } catch (e) {
-                textarea.select();
-                document.execCommand('copy');
-                showCopyFeedback();
+                try {
+                    textarea.select();
+                    document.execCommand('copy');
+                    showStatus('✓ Zkopírováno do schránky.');
+                } catch (e2) {
+                    showStatus('Kopírování se nezdařilo.', true);
+                }
             }
         }
 
-        function showCopyFeedback() {
-            const feedback = document.getElementById('copyFeedback');
-            feedback.classList.add('show');
-            setTimeout(() => feedback.classList.remove('show'), 2000);
+        // ========================================
+        // ACCESSIBLE FEEDBACK & DIALOGS
+        // ========================================
+
+        /**
+         * Non-blocking status message. Visible toast + polite/assertive
+         * screen-reader announcement (the #copyFeedback element is a live
+         * region). Errors use assertive so they are announced promptly.
+         */
+        function showStatus(message, isError) {
+            const el = document.getElementById('copyFeedback');
+            el.classList.toggle('is-error', !!isError);
+            el.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+            // Re-set text so the live region re-announces even for repeats.
+            el.textContent = '';
+            // eslint-disable-next-line no-unused-expressions
+            void el.offsetWidth;
+            el.textContent = message;
+            el.classList.add('show');
+            clearTimeout(el._hideTimer);
+            el._hideTimer = setTimeout(() => el.classList.remove('show'), isError ? 4000 : 2200);
+        }
+
+        /** Visible, non-disabled, focusable descendants of a container. */
+        function getFocusable(container) {
+            const sel = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+            return Array.from(container.querySelectorAll(sel))
+                .filter(el => el.offsetParent !== null || el === document.activeElement);
+        }
+
+        /** Keep Tab focus inside `container` while a modal is open. */
+        function trapFocus(container, e) {
+            const f = getFocusable(container);
+            if (f.length === 0) return;
+            const first = f[0];
+            const last = f[f.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
+
+        /**
+         * Accessible replacement for native confirm()/prompt(). Returns a
+         * Promise resolving to: the entered string (input dialog, confirmed),
+         * true (confirm dialog, confirmed), or null/false when cancelled.
+         * Manages focus (move in, trap, restore) and Escape/Enter keys.
+         */
+        function showDialog(opts) {
+            const o = opts || {};
+            const isInput = !!o.input;
+            return new Promise(resolve => {
+                const overlay = document.getElementById('appDialog');
+                const modal = overlay.querySelector('.modal');
+                const titleEl = document.getElementById('appDialogTitle');
+                const msgEl = document.getElementById('appDialogMessage');
+                const inputWrap = document.getElementById('appDialogInputWrap');
+                const inputEl = document.getElementById('appDialogInput');
+                const inputLabel = document.getElementById('appDialogInputLabel');
+                const confirmBtn = document.getElementById('appDialogConfirm');
+                const cancelBtn = document.getElementById('appDialogCancel');
+                const closeBtn = document.getElementById('appDialogClose');
+
+                titleEl.textContent = o.title || '';
+                msgEl.textContent = o.message || '';
+                msgEl.style.display = o.message ? '' : 'none';
+                inputWrap.style.display = isInput ? '' : 'none';
+                inputLabel.textContent = o.inputLabel || o.title || 'Hodnota';
+                inputEl.value = isInput ? (o.defaultValue || '') : '';
+                confirmBtn.textContent = o.confirmText || 'OK';
+                cancelBtn.textContent = o.cancelText || 'Zrušit';
+                confirmBtn.classList.toggle('btn-primary', true);
+
+                const previouslyFocused = document.activeElement;
+                overlay.classList.add('visible');
+                // Move focus into the dialog. Try synchronously, then once more
+                // in a microtask in case the element was not yet focusable.
+                const focusTarget = isInput ? inputEl : confirmBtn;
+                const focusInto = () => {
+                    focusTarget.focus();
+                    if (isInput && document.activeElement === inputEl) inputEl.select();
+                };
+                focusInto();
+                Promise.resolve().then(() => { if (document.activeElement !== focusTarget) focusInto(); });
+
+                function cleanup(result) {
+                    overlay.classList.remove('visible');
+                    overlay.removeEventListener('keydown', onKey, true);
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    cancelBtn.removeEventListener('click', onCancel);
+                    closeBtn.removeEventListener('click', onCancel);
+                    overlay.removeEventListener('mousedown', onOverlay);
+                    if (previouslyFocused && previouslyFocused.focus) previouslyFocused.focus();
+                    resolve(result);
+                }
+                function onConfirm() { cleanup(isInput ? inputEl.value : true); }
+                function onCancel() { cleanup(isInput ? null : false); }
+                function onOverlay(e) { if (e.target === overlay) onCancel(); }
+                function onKey(e) {
+                    if (e.key === 'Escape') { e.preventDefault(); onCancel(); }
+                    else if (e.key === 'Enter' && (!isInput || e.target === inputEl)) { e.preventDefault(); onConfirm(); }
+                    else if (e.key === 'Tab') { trapFocus(modal, e); }
+                }
+                confirmBtn.addEventListener('click', onConfirm);
+                cancelBtn.addEventListener('click', onCancel);
+                closeBtn.addEventListener('click', onCancel);
+                overlay.addEventListener('mousedown', onOverlay);
+                overlay.addEventListener('keydown', onKey, true);
+            });
         }
 
         // ========================================
@@ -1765,12 +1993,20 @@
             }
         }
 
-        function saveAsPreset() {
-            const name = prompt('Zadejte název presetu:');
-            if (!name || !name.trim()) return;
+        async function saveAsPreset() {
+            const name = await showDialog({
+                title: 'Uložit preset',
+                message: 'Zadejte název nového presetu:',
+                input: true,
+                inputLabel: 'Název presetu',
+                confirmText: 'Uložit',
+                cancelText: 'Zrušit'
+            });
+            if (name === null) return;                 // cancelled
+            if (!name.trim()) { showStatus('Zadejte prosím název presetu.', true); return; }
             const presets = getCustomPresets();
             if (Object.keys(presets).length >= LIMITS.maxPresets) {
-                alert('Nelze uložit: byl dosažen maximální počet uložených presetů (' + LIMITS.maxPresets + ').');
+                showStatus('Nelze uložit: byl dosažen maximální počet uložených presetů (' + LIMITS.maxPresets + ').', true);
                 return;
             }
             const key = 'custom_' + Date.now();
@@ -1782,19 +2018,27 @@
             if (saveCustomPresets(presets)) {
                 updateCustomPresetsList();
                 document.getElementById('presetSelect').value = key;
-                alert('Preset byl uložen!');
+                showStatus('Preset byl uložen.');
             } else {
-                alert('Preset se nepodařilo uložit do prohlížeče.');
+                showStatus('Preset se nepodařilo uložit do prohlížeče.', true);
             }
         }
 
-        function deletePreset(key) {
-            if (!confirm('Opravdu chcete smazat tento preset?')) return;
+        async function deletePreset(key) {
+            const ok = await showDialog({
+                title: 'Smazat preset',
+                message: 'Opravdu chcete tento preset smazat? Tuto akci nelze vrátit zpět.',
+                confirmText: 'Smazat',
+                cancelText: 'Zrušit'
+            });
+            if (!ok) return;
             const presets = getCustomPresets();
             delete presets[key];
             const saved = saveCustomPresets(presets);
             if (!saved) {
-                alert('Preset se nepodařilo odstranit z úložiště prohlížeče.');
+                showStatus('Preset se nepodařilo odstranit z úložiště prohlížeče.', true);
+            } else {
+                showStatus('Preset byl smazán.');
             }
             // Re-render from actual storage: on failure the preset truthfully
             // reappears; on success it is gone.
@@ -1802,6 +2046,13 @@
             renderPresetList();
             if (saved && document.getElementById('presetSelect').value === key) {
                 document.getElementById('presetSelect').value = '';
+            }
+            // The deleted row (and its button) is gone; move focus to a stable
+            // element so keyboard users are not dropped onto <body>.
+            const manage = document.getElementById('managePresetsModal');
+            if (manage.classList.contains('visible')) {
+                const closeBtn = manage.querySelector('.modal-close');
+                if (closeBtn) closeBtn.focus();
             }
         }
 
@@ -1825,13 +2076,13 @@
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 // 1) Parse — reject anything that is not valid JSON.
                 let parsed;
                 try {
                     parsed = JSON.parse(e.target.result);
                 } catch (err) {
-                    alert('Import se nezdařil: soubor není platný JSON.');
+                    showStatus('Import se nezdařil: soubor není platný JSON.', true);
                     return;
                 }
                 // 2) Validate structure and normalize into an allowlisted object.
@@ -1846,18 +2097,30 @@
                     } else {
                         msg = 'Import se nezdařil: soubor obsahuje neplatná nebo nepodporovaná data.';
                     }
-                    alert(msg);
+                    showStatus(msg, true);
                     return;
                 }
                 // 3) Only the safe, normalized object is used from here on.
                 let presetSaveFailed = false;
-                const saveAsNew = confirm('Uložit jako nový preset? (Zrušit = načíst přímo)');
+                const saveAsNew = await showDialog({
+                    title: 'Import presetu',
+                    message: 'Uložit importovaná nastavení jako nový preset? Zvolte „Jen načíst" pro pouhé načtení do formuláře.',
+                    confirmText: 'Uložit jako preset',
+                    cancelText: 'Jen načíst'
+                });
                 if (saveAsNew) {
-                    const name = prompt('Zadejte název presetu:', validated.name || 'Importovaný preset');
-                    if (name) {
+                    const name = await showDialog({
+                        title: 'Název presetu',
+                        input: true,
+                        inputLabel: 'Název presetu',
+                        defaultValue: validated.name || 'Importovaný preset',
+                        confirmText: 'Uložit',
+                        cancelText: 'Zrušit'
+                    });
+                    if (name !== null && name.trim()) {
                         const presets = getCustomPresets();
                         if (Object.keys(presets).length >= LIMITS.maxPresets) {
-                            alert('Nelze uložit: byl dosažen maximální počet uložených presetů (' + LIMITS.maxPresets + '). Preset bude pouze načten.');
+                            showStatus('Nelze uložit: byl dosažen maximální počet uložených presetů (' + LIMITS.maxPresets + '). Preset bude pouze načten.', true);
                         } else {
                             const key = 'custom_' + Date.now();
                             presets[key] = {
@@ -1879,9 +2142,9 @@
                 generatePrompt();
                 // Report the real outcome: only claim persistence if it happened.
                 if (stateSaved && !presetSaveFailed) {
-                    alert('Preset byl úspěšně importován!');
+                    showStatus('Preset byl úspěšně importován.');
                 } else {
-                    alert('Import byl načten, ale nepodařilo se jej uložit do prohlížeče. Po obnovení stránky se nemusí zachovat.');
+                    showStatus('Import byl načten, ale nepodařilo se jej uložit do prohlížeče. Po obnovení stránky se nemusí zachovat.', true);
                 }
             };
             reader.readAsText(file);
@@ -1892,13 +2155,45 @@
         // MODAL
         // ========================================
 
+        let managePresetsReturnFocus = null;
+
         function openManagePresets() {
             renderPresetList();
-            document.getElementById('managePresetsModal').classList.add('visible');
+            const overlay = document.getElementById('managePresetsModal');
+            managePresetsReturnFocus = document.activeElement;
+            overlay.classList.add('visible');
+            overlay.addEventListener('keydown', manageModalKeydown, true);
+            // Move focus into the dialog (first focusable = close button), with
+            // a microtask retry in case it was not yet focusable this tick.
+            const focusInto = () => {
+                const focusable = getFocusable(overlay.querySelector('.modal'));
+                (focusable[0] || overlay).focus();
+            };
+            focusInto();
+            Promise.resolve().then(() => {
+                if (!overlay.contains(document.activeElement)) focusInto();
+            });
         }
 
         function closeModal() {
-            document.getElementById('managePresetsModal').classList.remove('visible');
+            const overlay = document.getElementById('managePresetsModal');
+            if (!overlay.classList.contains('visible')) return;
+            overlay.classList.remove('visible');
+            overlay.removeEventListener('keydown', manageModalKeydown, true);
+            // Restore focus to whatever opened the modal.
+            if (managePresetsReturnFocus && managePresetsReturnFocus.focus) {
+                managePresetsReturnFocus.focus();
+            }
+            managePresetsReturnFocus = null;
+        }
+
+        function manageModalKeydown(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeModal();
+            } else if (e.key === 'Tab') {
+                trapFocus(document.getElementById('managePresetsModal').querySelector('.modal'), e);
+            }
         }
 
         // Build one preset row entirely via DOM APIs. User-controlled values
@@ -1933,6 +2228,7 @@
                 const delBtn = document.createElement('button');
                 delBtn.className = 'btn btn-small';
                 delBtn.textContent = '🗑️';
+                delBtn.setAttribute('aria-label', 'Smazat preset ' + name);
                 delBtn.addEventListener('click', () => deletePreset(key));
                 actions.appendChild(delBtn);
             }
@@ -1968,16 +2264,14 @@
             }
         }
 
-        // Close modal on overlay click
+        // Close the manage-presets modal on overlay (outside) click. No unsaved
+        // work is lost here. Escape and Tab-trapping are handled per-modal while
+        // it is open (manageModalKeydown / showDialog), so no global key handler
+        // is needed.
         document.getElementById('managePresetsModal').addEventListener('click', (e) => {
             if (e.target.classList.contains('modal-overlay')) {
                 closeModal();
             }
-        });
-
-        // Close on Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
         });
     </script>
 </body>
