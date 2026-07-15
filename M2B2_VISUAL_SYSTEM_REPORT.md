@@ -321,4 +321,32 @@ Rasterové screenshoty **nešlo v tomto prostředí pořídit** (screenshot pipe
 
 ---
 
-*Konec reportu M2B2 (+ post-review opravy M2B2.1). Změněn pouze `styles.css`; upraven tento report. `index.html`, `js/app.js` i review soubor nezměněny. Bez commitu a push. Draft PR #1 zůstal otevřený a nesloučený.*
+## M2B2.2 — Vynucené světlé téma
+
+**Praktická kontrola Netlify Deploy Preview** (commit `3d1e7d4`) ukázala, že při systémovém `prefers-color-scheme: dark` se aplikace automaticky přepnula do tmavého vzhledu. Přestože byl technicky funkční a kontrastně v pořádku, **tmavý vzhled potlačoval zamýšlený charakter „klidného světlého pracovního listu pro učitele"** a působil jako vývojářský nástroj / terminál. Rozhodnutí: **automatický tmavý režim odstranit** a vynutit světlé učitelské téma bez ohledu na systémové nastavení.
+
+### Co se změnilo (jen `styles.css`)
+- **Odstraněn celý blok `@media (prefers-color-scheme: dark)`** (35 řádků: komentářová hlavička + 28 řádků override barevných tokenů a stínů). Šlo o jedinou automatickou tmavou variantu; žádná jiná pravidla nebyla dotčena.
+- V `:root` **zůstává `color-scheme: light;`** — nyní jediné a nepřepisované; žádný `color-scheme: dark` ani `light dark` už v souboru není. Nativní prvky (select popup, spinnery, scrollbary) se tak drží světlého schématu i na systému nastaveném na tmavý.
+- Aktualizovány komentáře (hlavička souboru + `:root`), aby popisovaly vynucené světlé téma místo adaptivního.
+- **Světlý vizuální systém se nezměnil** — paleta, `--border-control`, kontrastní hranice polí (≥ 3:1), focus ring, radius, stíny, typografie, spacing, layout, prompt, modaly i stavové zprávy zůstávají přesně jako v M2B2.1.
+
+### Výsledný stav
+- Aplikace používá **stejnou světlou paletu bez ohledu na systémové nastavení**.
+- `getComputedStyle(document.documentElement).colorScheme` = **`light`** při systémovém light **i** dark.
+- **Ruční theme toggle nebyl přidán** (mimo rozsah). Případný tmavý režim může být v budoucnu zaveden **pouze jako samostatně navržená, volitelná a explicitně řízená funkce** (např. `data-theme` přepínač), nikoli jako automatické přepínání dle systému.
+
+### Výsledky testů (systémové light i dark)
+- **Computed styles:** 20 klíčových vizuálních hodnot (html/body/kontejner/karta/input/select/textarea/primární tlačítko/prompt/dialog/overlay/…) **shodných** v obou systémových režimech; jediný rozdíl je `matchMedia('(prefers-color-scheme: dark)')` (stav systému), nikoli vzhled.
+- **`color-scheme`:** `light` v obou režimech; **žádné tmavé plochy, žádný tmavý nativní select ani scrollbar, žádné bliknutí do tmavého režimu** (žádná dark media query → nic k přepnutí).
+- **Prompt/funkce:** 10/10 referenčních promptů SHA-256 **shodných s `3d1e7d4`** (0 rozdílů), 46/46 stylů validních, round-trip 23/23.
+- **Bezpečnost:** XSS 0 aktivních elementů, prototype pollution `({}).polluted === undefined`, storage chyby ošetřeny, škodlivý dlouhý název bez přetečení (delete tlačítko viditelné).
+- **Accessibility:** dialog open/Escape/návrat focusu, 0 kladných tabindex, `forced-colors` i `prefers-reduced-motion` bloky **zachovány** (odstranění dark media query se jich nedotklo).
+- **Responzivita:** 320–1440 px bez horizontálního scrollu/přetečení i při systémovém dark; dialog se vejde.
+- **Síť/konzole:** 3× same-origin 200, žádné externí požadavky, konzole bez chyb.
+
+> Historicky: tmavý režim v M2B2 **existoval** (token-based, přes `prefers-color-scheme`) a byl v M2B2.1 doplněn o `color-scheme` a kontrast; v **M2B2.2** byl automatický tmavý režim záměrně **odstraněn** ve prospěch vynuceného světlého učitelského tématu. Podrobnosti viz `M2B2_2_LIGHT_THEME_REPORT.md`.
+
+---
+
+*Konec reportu M2B2 (+ opravy M2B2.1 a M2B2.2). Změněn pouze `styles.css`; upraven tento report; přidán `M2B2_2_LIGHT_THEME_REPORT.md`. `index.html`, `js/app.js` i review soubor nezměněny. Bez commitu a push. Draft PR #1 zůstal otevřený a nesloučený.*

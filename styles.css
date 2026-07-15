@@ -1,17 +1,18 @@
 /* ============================================================
    NotebookLM Generátor promptů — vizuální systém M2B2
    „Klidný světlý pracovní list"
-   Světlé výchozí téma + volitelný adaptivní tmavý režim
-   (prefers-color-scheme). Vše řízeno CSS tokeny; žádný JS,
-   žádný externí font, žádný síťový požadavek.
+   Vynucené světlé učitelské téma bez ohledu na systémové
+   barevné schéma (M2B2.2 – automatický tmavý režim odstraněn).
+   Vše řízeno CSS tokeny; žádný JS, žádný externí font,
+   žádný síťový požadavek.
    ============================================================ */
 
 /* ========================================
-   DESIGN TOKENS (světlý režim = výchozí)
+   DESIGN TOKENS (jediné, vynucené světlé téma)
    ======================================== */
 :root {
     /* Nativní barevné schéma (form controls, select popup, spinnery,
-       scrollbary) – světlé výchozí; tmavá varianta níže v media query. */
+       scrollbary) – vynuceno na světlé bez ohledu na systémové téma. */
     color-scheme: light;
 
     /* Plochy a text */
@@ -61,42 +62,6 @@
     --content-max: 1560px;      /* strop šířky aplikace na širokém monitoru */
 
     --transition: 150ms ease;
-}
-
-/* ========================================
-   ADAPTIVNÍ TMAVÝ REŽIM
-   Přepíná pouze barevné tokeny (a stíny) – všechna
-   pravidla níže zůstávají beze změny. Kontrast ověřen
-   (text ≥ 14:1, pomocný text ≥ 6.7:1, plochy AA).
-   ======================================== */
-@media (prefers-color-scheme: dark) {
-    :root {
-        color-scheme: dark;
-
-        --bg: #0f141b;
-        --surface: #171d26;
-        --surface-2: #1e2630;
-        --surface-3: #232c38;
-        --border: #2b3440;
-        --border-strong: #3a4552;
-        --border-control: #657286;  /* hranice ovládacích prvků – ≥ 3:1 vůči tmavému povrchu */
-        --text: #e6eaf0;
-        --text-secondary: #c2cad6;
-        --text-muted: #9aa4b2;
-
-        --accent: #5b9bff;
-        --accent-hover: #79adff;
-        --accent-weak: #1a2740;
-        --on-accent: #0f141b;       /* tmavý text na světlém akcentu/stavu */
-        --success: #35b87c;
-        --error: #e06666;
-        --focus-ring: #7cadff;
-        --focus-shadow: rgba(124,173,255,0.30);
-        --tips-border: #2b3f63;
-
-        --shadow-sm: 0 1px 2px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.4);
-        --shadow-md: 0 12px 32px rgba(0,0,0,0.5);
-    }
 }
 
 /* ========================================
