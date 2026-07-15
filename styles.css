@@ -1,688 +1,907 @@
-        /* ========================================
-           CSS VARIABLES & RESET
-           ======================================== */
-        :root {
-            --bg-primary: #0a0e14;
-            --bg-secondary: #12171e;
-            --bg-tertiary: #1a2028;
-            --bg-input: #0d1117;
-            --border-color: #2d3640;
-            --border-focus: #4dabf7;
-            --text-primary: #e8edf4;
-            --text-secondary: #9ca8b8;
-            --text-muted: #636e7b;
-            --accent-blue: #4dabf7;
-            --accent-cyan: #22d3ee;
-            --accent-green: #34d399;
-            --accent-orange: #fb923c;
-            --accent-red: #f87171;
-            --accent-purple: #a78bfa;
-            --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-            --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            --radius-sm: 4px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
-            --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
-            --transition: 150ms ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* ========================================
-           BASE STYLES
-           ======================================== */
-        body {
-            font-family: var(--font-sans);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            line-height: 1.5;
-        }
-
-        /* ========================================
-           LAYOUT
-           ======================================== */
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-            border-bottom: 1px solid var(--border-color);
-            padding: 18px 28px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .header h1 {
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            letter-spacing: -0.02em;
-        }
-
-        .header h1::before {
-            content: '🎯';
-            font-size: 1.4rem;
-        }
-
-        .header-subtitle {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            margin-left: 40px;
-            margin-top: 4px;
-        }
-
-        /* Preset controls */
-        .preset-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .preset-select {
-            min-width: 260px;
-        }
-
-        /* Main content */
-        .main-content {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* Left panel - Form */
-        .form-panel {
-            width: 52%;
-            min-width: 420px;
-            max-width: 640px;
-            overflow-y: auto;
-            padding: 24px;
-            border-right: 1px solid var(--border-color);
-            background: var(--bg-secondary);
-        }
-
-        /* Right panel - Output */
-        .output-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 24px;
-            background: var(--bg-primary);
-        }
-
-        /* ========================================
-           FORM SECTIONS
-           ======================================== */
-        .form-section {
-            margin-bottom: 20px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-        }
-
-        .section-header {
-            background: linear-gradient(90deg, rgba(77,171,247,0.12) 0%, transparent 100%);
-            padding: 11px 16px;
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--accent-blue);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-
-        .section-content {
-            padding: 14px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        /* ========================================
-           FORM ELEMENTS
-           ======================================== */
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-        }
-
-        label {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        select,
-        textarea {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            padding: 9px 11px;
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            font-family: var(--font-sans);
-            transition: border-color var(--transition), box-shadow var(--transition);
-        }
-
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px rgba(77,171,247,0.15);
-        }
-
-        input[type="number"] {
-            width: 100%;
-        }
-
-        select {
-            cursor: pointer;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 70px;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            line-height: 1.55;
-        }
-
-        /* Custom language input */
-        .custom-language-wrapper {
-            display: none;
-            margin-top: 6px;
-        }
-
-        .custom-language-wrapper.visible {
-            display: block;
-        }
-
-        /* Checkbox styling */
-        .checkbox-group {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 8px 11px;
-            background: var(--bg-input);
-            border-radius: var(--radius-sm);
-            border: 1px solid transparent;
-            transition: border-color var(--transition);
-            cursor: pointer;
-        }
-
-        .checkbox-group:hover {
-            border-color: var(--border-color);
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            width: 17px;
-            height: 17px;
-            margin-top: 1px;
-            accent-color: var(--accent-blue);
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .checkbox-group label {
-            cursor: pointer;
-            flex: 1;
-            color: var(--text-primary);
-            font-size: 0.84rem;
-        }
-
-        .checkbox-group label small {
-            display: block;
-            color: var(--text-muted);
-            font-size: 0.72rem;
-            margin-top: 2px;
-        }
-
-        /* Radio / Toggle styling */
-        .toggle-group {
-            display: flex;
-            gap: 0;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        .toggle-group label {
-            flex: 1;
-            padding: 8px 14px;
-            text-align: center;
-            cursor: pointer;
-            background: var(--bg-input);
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            transition: all var(--transition);
-            border-right: 1px solid var(--border-color);
-        }
-
-        .toggle-group label:last-child {
-            border-right: none;
-        }
-
-        /* Visually hidden but still focusable and exposed to screen readers
-           (do NOT use display:none / visibility:hidden – that removes it from
-           the tab order and the accessibility tree). */
-        .toggle-group input[type="radio"] {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            opacity: 0;
-            margin: 0;
-            pointer-events: none;
-        }
-
-        .toggle-group input[type="radio"]:checked + label {
-            background: var(--accent-blue);
-            color: #fff;
-        }
-
-        /* Visible keyboard focus for the toggle: ring on the associated label. */
-        .toggle-group input[type="radio"]:focus-visible + label {
-            outline: 2px solid var(--border-focus);
-            outline-offset: -2px;
-        }
-
-        /* ========================================
-           OUTPUT AREA
-           ======================================== */
-        .output-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .output-header h2 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-
-        .output-stats {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-        }
-
-        #generatedPrompt {
-            flex: 1;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            font-family: var(--font-mono);
-            font-size: 0.82rem;
-            line-height: 1.7;
-            resize: none;
-            color: var(--text-primary);
-        }
-
-        #generatedPrompt:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-        }
-
-        /* Tips */
-        .tips-section {
-            margin-top: 14px;
-            padding: 12px 14px;
-            background: rgba(251,146,60,0.08);
-            border: 1px solid rgba(251,146,60,0.25);
-            border-radius: var(--radius-md);
-        }
-
-        .tips-section h3 {
-            font-size: 0.75rem;
-            color: var(--accent-orange);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-
-        .tips-section h3::before {
-            content: '💡';
-        }
-
-        .tips-section ul {
-            font-size: 0.78rem;
-            color: var(--text-secondary);
-            padding-left: 16px;
-        }
-
-        .tips-section li {
-            margin-bottom: 3px;
-        }
-
-        /* ========================================
-           BUTTONS
-           ======================================== */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 9px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            font-size: 0.82rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition);
-            font-family: var(--font-sans);
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        .btn:hover {
-            border-color: var(--text-muted);
-            background: var(--bg-secondary);
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background: var(--accent-blue);
-            border-color: var(--accent-blue);
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background: #3d9be6;
-            border-color: #3d9be6;
-        }
-
-        .btn-small {
-            padding: 6px 11px;
-            font-size: 0.78rem;
-        }
-
-        /* ========================================
-           ACTION BAR
-           ======================================== */
-        .action-bar {
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border-color);
-            padding: 14px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .action-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        /* Copy feedback */
-        .copy-feedback {
-            position: fixed;
-            bottom: 70px;
-            right: 24px;
-            background: var(--accent-green);
-            color: #fff;
-            padding: 11px 18px;
-            border-radius: var(--radius-md);
-            font-weight: 500;
-            font-size: 0.85rem;
-            box-shadow: var(--shadow-md);
-            opacity: 0;
-            transform: translateY(16px);
-            transition: all 250ms ease;
-            pointer-events: none;
-        }
-
-        .copy-feedback.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* ========================================
-           MODAL
-           ======================================== */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            /* Transition opacity only, so `visibility` flips instantly and the
-               dialog is focusable in the same tick it becomes visible. */
-            transition: opacity 180ms ease;
-            z-index: 1000;
-        }
-
-        .modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            width: 90%;
-            max-width: 480px;
-            max-height: 80vh;
-            overflow: hidden;
-            transform: scale(0.95);
-            transition: transform 180ms ease;
-        }
-
-        .modal-overlay.visible .modal {
-            transform: scale(1);
-        }
-
-        .modal-header {
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.4rem;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        .modal-close:hover {
-            color: var(--text-primary);
-        }
-
-        .modal-body {
-            padding: 18px;
-            overflow-y: auto;
-            max-height: 58vh;
-        }
-
-        .modal-footer {
-            padding: 14px 18px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-        }
-
-        /* Preset list */
-        .preset-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .preset-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 11px 14px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-        }
-
-        .preset-item-name {
-            font-weight: 500;
-            font-size: 0.88rem;
-        }
-
-        .preset-item-actions {
-            display: flex;
-            gap: 6px;
-        }
-
-        .preset-item-badge {
-            font-size: 0.68rem;
-            padding: 2px 7px;
-            background: rgba(77,171,247,0.18);
-            color: var(--accent-blue);
-            border-radius: 8px;
-            margin-left: 8px;
-        }
-
-        /* ========================================
-           ACCESSIBILITY
-           ======================================== */
-        /* Visible keyboard focus for interactive controls. */
-        .btn:focus-visible,
-        .modal-close:focus-visible,
-        select:focus-visible,
-        .checkbox-group input[type="checkbox"]:focus-visible {
-            outline: 2px solid var(--border-focus);
-            outline-offset: 2px;
-        }
-
-        /* Screen-reader-only content (kept out of the visual layout). */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
-        /* Error variant of the status toast. */
-        .copy-feedback.is-error {
-            background: var(--accent-red);
-        }
-
-        /* ========================================
-           RESPONSIVE
-           ======================================== */
-        @media (max-width: 920px) {
-            .main-content {
-                flex-direction: column;
-            }
-
-            .form-panel {
-                width: 100%;
-                max-width: none;
-                min-width: auto;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-                max-height: 52vh;
-            }
-
-            .output-panel {
-                min-height: 48vh;
-            }
-        }
-
-        /* ========================================
-           SCROLLBAR
-           ======================================== */
-        ::-webkit-scrollbar {
-            width: 9px;
-            height: 9px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
-        }
-
-        /* ========================================
-           REDUCED MOTION
-           Respect users who ask for less motion: make transitions and
-           animations effectively instant while keeping state changes visible.
-           ======================================== */
-        @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                animation-duration: 0.001ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.001ms !important;
-                scroll-behavior: auto !important;
-            }
-        }
+/* ============================================================
+   NotebookLM Generátor promptů — vizuální systém M2B2
+   „Klidný světlý pracovní list"
+   Světlé výchozí téma + volitelný adaptivní tmavý režim
+   (prefers-color-scheme). Vše řízeno CSS tokeny; žádný JS,
+   žádný externí font, žádný síťový požadavek.
+   ============================================================ */
+
+/* ========================================
+   DESIGN TOKENS (světlý režim = výchozí)
+   ======================================== */
+:root {
+    /* Nativní barevné schéma (form controls, select popup, spinnery,
+       scrollbary) – světlé výchozí; tmavá varianta níže v media query. */
+    color-scheme: light;
+
+    /* Plochy a text */
+    --bg: #f5f7fa;              /* pozadí stránky – studená světlá šeď */
+    --surface: #ffffff;         /* karty, panely */
+    --surface-2: #eef1f5;       /* jemné bloky, hover, výstupní panel */
+    --surface-3: #e7ecf2;       /* zvýrazněný povrch */
+    --border: #dce1e8;          /* jemné dekorativní ohraničení (karty, panely) */
+    --border-strong: #c3ccd8;   /* dekorativní silnější (scrollbar) */
+    --border-control: #7e8b9d;  /* hranice ovládacích prvků – kontrast ≥ 3:1 vůči povrchu i okolí */
+    --text: #1f2733;            /* hlavní text */
+    --text-secondary: #3d4757;  /* popisky polí */
+    --text-muted: #5b6472;      /* pomocný slabší text (kontrast ≥ 4.5:1) */
+
+    /* Akcent a stavy */
+    --accent: #2563d6;          /* klidná modrá – primární akce, focus */
+    --accent-hover: #1c50bf;    /* akcent hover/active */
+    --accent-weak: #e8f0fe;     /* velmi světlé akcentní pozadí */
+    --on-accent: #ffffff;       /* text/ikona na barevné ploše */
+    --success: #0f7a48;         /* uloženo / hotovo */
+    --error: #c23b3b;           /* chyba */
+    --focus-ring: #2563d6;      /* viditelný focus */
+    --focus-shadow: rgba(37,99,214,0.22); /* jemný focus glow */
+    --tips-border: #a9c6f2;     /* ohraničení tip callout */
+
+    /* Typografie */
+    --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+
+    /* Zaoblení */
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
+
+    /* Stíny (jen 2 úrovně, střídmé) */
+    --shadow-sm: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.08);
+    --shadow-md: 0 10px 28px rgba(16,24,40,0.14);
+
+    /* Spacing škála (4px základ; deklarovány jen skutečně užívané kroky) */
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 16px;
+    --sp-6: 24px;
+
+    /* Rozměry */
+    --control-h: 42px;          /* minimální praktická výška ovládání */
+    --content-max: 1560px;      /* strop šířky aplikace na širokém monitoru */
+
+    --transition: 150ms ease;
+}
+
+/* ========================================
+   ADAPTIVNÍ TMAVÝ REŽIM
+   Přepíná pouze barevné tokeny (a stíny) – všechna
+   pravidla níže zůstávají beze změny. Kontrast ověřen
+   (text ≥ 14:1, pomocný text ≥ 6.7:1, plochy AA).
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+
+        --bg: #0f141b;
+        --surface: #171d26;
+        --surface-2: #1e2630;
+        --surface-3: #232c38;
+        --border: #2b3440;
+        --border-strong: #3a4552;
+        --border-control: #657286;  /* hranice ovládacích prvků – ≥ 3:1 vůči tmavému povrchu */
+        --text: #e6eaf0;
+        --text-secondary: #c2cad6;
+        --text-muted: #9aa4b2;
+
+        --accent: #5b9bff;
+        --accent-hover: #79adff;
+        --accent-weak: #1a2740;
+        --on-accent: #0f141b;       /* tmavý text na světlém akcentu/stavu */
+        --success: #35b87c;
+        --error: #e06666;
+        --focus-ring: #7cadff;
+        --focus-shadow: rgba(124,173,255,0.30);
+        --tips-border: #2b3f63;
+
+        --shadow-sm: 0 1px 2px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.4);
+        --shadow-md: 0 12px 32px rgba(0,0,0,0.5);
+    }
+}
+
+/* ========================================
+   RESET & BASE
+   ======================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* ========================================
+   APP SHELL / LAYOUT
+   ======================================== */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-width: var(--content-max);
+    margin-inline: auto;
+    background: var(--bg);
+}
+
+/* Header */
+.header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: var(--sp-4) var(--sp-6);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+}
+
+.header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+.header-subtitle {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* Preset controls */
+.preset-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+}
+
+.preset-select {
+    min-width: 260px;
+}
+
+/* Main content */
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Left panel - Form */
+.form-panel {
+    width: 52%;
+    min-width: 420px;
+    max-width: 660px;
+    overflow-y: auto;
+    padding: var(--sp-6);
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+}
+
+/* Right panel - Output */
+.output-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-6);
+    background: var(--surface-2);
+}
+
+/* ========================================
+   FORM SECTIONS (karty)
+   ======================================== */
+.form-section {
+    margin-bottom: var(--sp-4);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.section-header {
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    letter-spacing: 0;
+}
+
+/* Emoji uvnitř nadpisu sekce = drobná tlumená dekorace */
+.section-header span {
+    font-size: 1rem;
+    line-height: 1;
+    opacity: 0.85;
+}
+
+.section-content {
+    padding: var(--sp-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+}
+
+/* ========================================
+   FORM ELEMENTS
+   ======================================== */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-row {
+    display: flex;
+    gap: var(--sp-3);
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+    background: var(--surface);
+    border: 1px solid var(--border-control);
+    border-radius: var(--r-sm);
+    padding: 10px 12px;
+    min-height: var(--control-h);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-family: var(--font-sans);
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+input[type="text"]::placeholder,
+textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+}
+
+input[type="text"]:hover,
+input[type="number"]:hover,
+select:hover,
+textarea:hover {
+    border-color: var(--text-muted);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+
+input[type="number"] {
+    width: 100%;
+}
+
+select {
+    cursor: pointer;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 76px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.55;
+}
+
+/* Custom language input */
+.custom-language-wrapper {
+    display: none;
+    margin-top: 6px;
+}
+
+.custom-language-wrapper.visible {
+    display: block;
+}
+
+/* ========================================
+   CHECKBOX
+   ======================================== */
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    padding: 10px 12px;
+    min-height: var(--control-h);
+    background: var(--surface);
+    border-radius: var(--r-sm);
+    border: 1px solid var(--border-control);
+    transition: border-color var(--transition), background var(--transition);
+    cursor: pointer;
+}
+
+.checkbox-group:hover {
+    border-color: var(--text-muted);
+    background: var(--surface-2);
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkbox-group label {
+    cursor: pointer;
+    flex: 1;
+    color: var(--text);
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.checkbox-group label small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+/* ========================================
+   TOGGLE (segmentovaný přepínač)
+   ======================================== */
+.toggle-group {
+    display: flex;
+    gap: 0;
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    border: 1px solid var(--border-control);
+}
+
+.toggle-group label {
+    flex: 1;
+    padding: 10px 14px;
+    min-height: var(--control-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background var(--transition), color var(--transition);
+    border-right: 1px solid var(--border-control);
+}
+
+.toggle-group label:last-child {
+    border-right: none;
+}
+
+/* Vizuálně skryté, ale fokusovatelné a v accessibility stromu
+   (nepoužívat display:none / visibility:hidden). */
+.toggle-group input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+.toggle-group input[type="radio"]:checked + label {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+/* Viditelný klávesnicový focus: ring na přidruženém labelu. */
+.toggle-group input[type="radio"]:focus-visible + label {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+}
+
+/* ========================================
+   OUTPUT AREA / PROMPT
+   ======================================== */
+.output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--sp-3);
+}
+
+.output-header h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0;
+}
+
+.output-stats {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+#generatedPrompt {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border-control);
+    border-radius: var(--r-md);
+    padding: var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.7;
+    resize: none;
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+}
+
+#generatedPrompt:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+
+/* Tips */
+.tips-section {
+    margin-top: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--accent-weak);
+    border: 1px solid var(--tips-border);
+    border-radius: var(--r-md);
+}
+
+.tips-section h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: var(--sp-2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0;
+}
+
+.tips-section h3::before {
+    content: '💡';
+}
+
+.tips-section ul {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    padding-left: var(--sp-4);
+}
+
+.tips-section li {
+    margin-bottom: 4px;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px;
+    min-height: 40px;
+    border: 1px solid var(--border-control);
+    border-radius: var(--r-sm);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
+    font-family: var(--font-sans);
+    background: var(--surface);
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.btn:hover {
+    border-color: var(--text-muted);
+    background: var(--surface-2);
+}
+
+.btn:active {
+    background: var(--surface-3);
+}
+
+.btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: var(--on-accent);
+}
+
+.btn-primary:active {
+    background: var(--accent-hover);
+}
+
+.btn-small {
+    padding: 8px 12px;
+    min-height: 36px;
+    font-size: 0.83rem;
+}
+
+/* ========================================
+   ACTION BAR
+   ======================================== */
+.action-bar {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: var(--sp-3) var(--sp-6);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+}
+
+.action-group {
+    display: flex;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   COPY FEEDBACK (toast / live region)
+   ======================================== */
+.copy-feedback {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--success);
+    color: var(--on-accent);
+    padding: 12px 18px;
+    border-radius: var(--r-md);
+    font-weight: 600;
+    font-size: 0.88rem;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 200ms ease, transform 200ms ease;
+    pointer-events: none;
+    z-index: 1100;
+    max-width: min(92vw, 420px);
+}
+
+.copy-feedback.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Chybová varianta status toastu. */
+.copy-feedback.is-error {
+    background: var(--error);
+    color: var(--on-accent);
+}
+
+/* ========================================
+   MODAL
+   ======================================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-4);
+    opacity: 0;
+    visibility: hidden;
+    /* Přechod jen opacity, aby se `visibility` přepnula okamžitě a
+       dialog byl fokusovatelný ve stejném ticku, kdy se zobrazí. */
+    transition: opacity 180ms ease;
+    z-index: 1000;
+}
+
+.modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    width: 100%;
+    max-width: 480px;
+    max-height: min(80vh, 80dvh);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transform: scale(0.96);
+    transition: transform 180ms ease;
+}
+
+.modal-overlay.visible .modal {
+    transform: scale(1);
+}
+
+.modal-header {
+    padding: var(--sp-4) var(--sp-4);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-3);
+}
+
+.modal-header h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-sm);
+    transition: background var(--transition), color var(--transition);
+}
+
+.modal-close:hover {
+    color: var(--text);
+    background: var(--surface-2);
+}
+
+.modal-body {
+    padding: var(--sp-4);
+    overflow-y: auto;
+    max-height: min(58vh, 58dvh);
+}
+
+.modal-footer {
+    padding: var(--sp-4);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--sp-2);
+}
+
+/* Preset list */
+.preset-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+}
+
+.preset-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+}
+
+.preset-item-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text);
+    overflow-wrap: anywhere;
+    min-width: 0;
+}
+
+.preset-item-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.preset-item-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    background: var(--accent-weak);
+    color: var(--accent);
+    border-radius: 999px;
+    margin-left: var(--sp-2);
+    white-space: nowrap;
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+/* Viditelný klávesnicový focus pro interaktivní prvky. */
+.btn:focus-visible,
+.modal-close:focus-visible,
+input[type="text"]:focus-visible,
+input[type="number"]:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.checkbox-group input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* Obsah jen pro čtečky (mimo vizuální layout). */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ========================================
+   RESPONSIVE
+   Zachovává původní funkční breakpoint (920px): panely se
+   skládají pod sebe do dvou nezávisle scrollovatelných oblastí.
+   ======================================== */
+@media (max-width: 920px) {
+    .main-content {
+        flex-direction: column;
+    }
+
+    .form-panel {
+        width: 100%;
+        max-width: none;
+        min-width: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        max-height: 52vh;
+        max-height: 52dvh;
+    }
+
+    .output-panel {
+        min-height: 48vh;
+        min-height: 48dvh;
+    }
+}
+
+@media (max-width: 560px) {
+    .header,
+    .form-panel,
+    .output-panel,
+    .action-bar {
+        padding-left: var(--sp-4);
+        padding-right: var(--sp-4);
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: var(--sp-4);
+    }
+
+    .preset-select {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .action-bar {
+        justify-content: flex-start;
+    }
+}
+
+/* Větší dotykové plochy na dotykových zařízeních. */
+@media (pointer: coarse) {
+    .btn,
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea,
+    .toggle-group label {
+        min-height: 44px;
+    }
+}
+
+/* ========================================
+   SCROLLBAR (jemná, laděná do světlého povrchu)
+   ======================================== */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 999px;
+    border: 2px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+* {
+    scrollbar-color: var(--border-strong) transparent;
+}
+
+/* ========================================
+   REDUCED MOTION
+   Respektuje uživatele, kteří chtějí méně pohybu: přechody a
+   animace jsou prakticky okamžité, změny stavu zůstávají viditelné.
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ========================================
+   FORCED COLORS / WINDOWS HIGH CONTRAST
+   Základní podpora: zachovat ohraničení a viditelný stav
+   vybraného přepínače i po odstranění barev systémem.
+   ======================================== */
+@media (forced-colors: active) {
+    .form-section,
+    .checkbox-group,
+    .toggle-group,
+    .modal,
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea,
+    .btn,
+    #generatedPrompt {
+        border: 1px solid CanvasText;
+    }
+
+    .btn:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    .modal-close:focus-visible,
+    .toggle-group input[type="radio"]:focus-visible + label {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+
+    /* Vybraný přepínač se v forced-colors nespoléhá jen na pozadí. */
+    .toggle-group input[type="radio"]:checked + label {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+}
