@@ -1,0 +1,1270 @@
+/* ============================================================
+   Gemini Notebook prompt generator — visual integration
+   with AI ve Výuce. Compact teacher workflow; no marketing
+   effects, external fonts, or new network requests.
+   ============================================================ */
+
+/* ========================================
+   DESIGN TOKENS
+   ======================================== */
+:root {
+    /* Native form controls and select menus follow the dark interface. */
+    color-scheme: dark;
+
+    /* AI ve Výuce palette */
+    --bg: #0a0f1e;
+    --bg-secondary: #0d1530;
+    --surface: rgba(255, 255, 255, 0.05);
+    --surface-2: #0d1530;
+    --surface-3: rgba(255, 255, 255, 0.09);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.20);
+    /* Stronger control border keeps inputs identifiable on dark cards. */
+    --border-control: #7d8eaa;
+    --text: #eaf0fb;
+    --text-secondary: #8fa3c8;
+    --text-muted: #5a6e8a;
+
+    /* Accents and states */
+    --accent: #f5a623;
+    --accent-hover: #ffbd45;
+    --accent-weak: rgba(245, 166, 35, 0.13);
+    --on-accent: #111827;
+    --accent-mint: #00d4a8;
+    --accent-blue: #4a90e2;
+    --success: #00d4a8;
+    --error: #ff737d;
+    --focus-ring: #00d4a8;
+    --focus-shadow: rgba(0, 212, 168, 0.16);
+    --tips-border: rgba(0, 212, 168, 0.35);
+
+    /* Typografie */
+    --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-heading: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+
+    /* Zaoblení */
+    --r-sm: 10px;
+    --r-md: 16px;
+    --r-lg: 20px;
+
+    /* Stíny (jen 2 úrovně, střídmé) */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.18), 0 6px 18px rgba(0, 0, 0, 0.14);
+    --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.38);
+
+    /* Spacing škála (4px základ; deklarovány jen skutečně užívané kroky) */
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 16px;
+    --sp-6: 24px;
+
+    /* Rozměry */
+    --control-h: 42px;          /* minimální praktická výška ovládání */
+    --content-max: 1560px;      /* strop šířky aplikace na širokém monitoru */
+
+    --transition: 150ms ease;
+}
+
+/* ========================================
+   RESET & BASE
+   ======================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--font-heading);
+}
+
+/* ========================================
+   APP SHELL / LAYOUT
+   ======================================== */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-width: var(--content-max);
+    margin-inline: auto;
+    background: var(--bg);
+}
+
+/* Header */
+.header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: var(--sp-4) var(--sp-6);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+}
+
+.header-branding {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    flex: 1 1 520px;
+    min-width: 0;
+}
+
+.brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    color: var(--accent);
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: rgba(245, 166, 35, 0.55);
+    text-underline-offset: 4px;
+    white-space: nowrap;
+}
+
+.brand-link:hover,
+.site-footer a:hover {
+    color: #ffd27a;
+}
+
+.brand-link:focus-visible,
+.site-footer a:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
+.header-copy {
+    min-width: 0;
+}
+
+.header h1 {
+    font-family: var(--font-heading);
+    font-size: 1.22rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+.header-subtitle {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Preset controls */
+.preset-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+}
+
+.preset-select {
+    min-width: 260px;
+    width: auto;
+    max-width: 100%;
+    flex: 0 1 300px;
+}
+
+/* Main content */
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Left panel - Form */
+.form-panel {
+    width: 52%;
+    min-width: 420px;
+    max-width: 660px;
+    overflow-y: auto;
+    padding: var(--sp-6);
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+}
+
+/* Right panel - Output */
+.output-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-6);
+    background: var(--bg-secondary);
+}
+
+/* ========================================
+   FORM SECTIONS (karty)
+   ======================================== */
+.form-section {
+    margin-bottom: var(--sp-4);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.section-header {
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    letter-spacing: 0;
+}
+
+/* Emoji uvnitř nadpisu sekce = drobná tlumená dekorace */
+.section-header span {
+    font-size: 1rem;
+    line-height: 1;
+    opacity: 0.85;
+}
+
+.section-content {
+    padding: var(--sp-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+}
+
+/* ========================================
+   FORM ELEMENTS
+   ======================================== */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-row {
+    display: flex;
+    gap: var(--sp-3);
+}
+
+.form-row .form-group {
+    flex: 1;
+    min-width: 0;
+}
+
+label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+    background: var(--surface);
+    border: 1px solid var(--border-control);
+    border-radius: var(--r-sm);
+    padding: 10px 12px;
+    min-height: var(--control-h);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-family: var(--font-sans);
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+input[type="text"]::placeholder,
+textarea::placeholder {
+    color: var(--text-secondary);
+    opacity: 1;
+}
+
+input[type="text"]:hover,
+input[type="number"]:hover,
+select:hover,
+textarea:hover {
+    border-color: var(--text-muted);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+
+input[type="number"] {
+    width: 100%;
+}
+
+select {
+    cursor: pointer;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+select option,
+select optgroup {
+    background: var(--bg-secondary);
+    color: var(--text);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 76px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.55;
+}
+
+/* Custom language input */
+.custom-language-wrapper {
+    display: none;
+    margin-top: 6px;
+}
+
+.custom-language-wrapper.visible {
+    display: block;
+}
+
+/* ========================================
+   CHECKBOX
+   ======================================== */
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    padding: 10px 12px;
+    min-height: var(--control-h);
+    background: var(--surface);
+    border-radius: var(--r-sm);
+    border: 1px solid var(--border-control);
+    transition: border-color var(--transition), background var(--transition);
+    cursor: pointer;
+}
+
+.checkbox-group:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-2);
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    accent-color: var(--accent-mint);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkbox-group label {
+    cursor: pointer;
+    flex: 1;
+    color: var(--text);
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.checkbox-group label small {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+/* ========================================
+   TOGGLE (segmentovaný přepínač)
+   ======================================== */
+.toggle-group {
+    display: flex;
+    gap: 0;
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    border: 1px solid var(--border-control);
+}
+
+.toggle-group label {
+    flex: 1;
+    padding: 10px 14px;
+    min-height: var(--control-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background var(--transition), color var(--transition);
+    border-right: 1px solid var(--border-control);
+}
+
+.toggle-group label:last-child {
+    border-right: none;
+}
+
+/* Vizuálně skryté, ale fokusovatelné a v accessibility stromu
+   (nepoužívat display:none / visibility:hidden). */
+.toggle-group input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+.toggle-group input[type="radio"]:checked + label {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+/* Viditelný klávesnicový focus: ring na přidruženém labelu. */
+.toggle-group input[type="radio"]:focus-visible + label {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+}
+
+/* ========================================
+   OUTPUT AREA / PROMPT
+   ======================================== */
+.output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--sp-3);
+}
+
+.notebook-settings {
+    margin: 0 0 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--tips-border);
+    border-left: 3px solid var(--accent-mint);
+    border-radius: var(--r-lg);
+    background: rgba(0, 212, 168, 0.055);
+}
+
+.notebook-settings h3 {
+    margin: 0 0 6px;
+    font-size: 0.9rem;
+    font-weight: 650;
+    color: var(--text);
+}
+
+.notebook-settings-hint {
+    margin: 0 0 8px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.notebook-settings pre {
+    margin: 0;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.86rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+}
+
+.prompt-label {
+    display: block;
+    margin: 4px 0 8px;
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 650;
+}
+
+.output-header h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0;
+}
+
+.output-stats {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}
+
+#generatedPrompt {
+    flex: 1;
+    background: rgba(5, 9, 20, 0.62);
+    border: 1px solid var(--border-control);
+    border-radius: var(--r-md);
+    padding: var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.7;
+    resize: none;
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+}
+
+#generatedPrompt:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+
+/* Tips */
+.tips-section {
+    margin-top: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+    background: rgba(0, 212, 168, 0.055);
+    border: 1px solid var(--tips-border);
+    border-radius: var(--r-md);
+}
+
+.tips-section h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: var(--sp-2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0;
+}
+
+.tips-section h3::before {
+    content: '💡';
+}
+
+.tips-section ul {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    padding-left: var(--sp-4);
+}
+
+.tips-section li {
+    margin-bottom: 4px;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px;
+    min-height: 40px;
+    border: 1px solid var(--border-control);
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
+    font-family: var(--font-sans);
+    background: var(--surface);
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.btn:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-3);
+}
+
+.btn:active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #f8b83f, var(--accent));
+    border-color: var(--accent);
+    color: var(--on-accent);
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: var(--on-accent);
+}
+
+.btn-primary:active {
+    background: var(--accent-hover);
+}
+
+.btn-small {
+    padding: 8px 12px;
+    min-height: 36px;
+    font-size: 0.83rem;
+}
+
+/* ========================================
+   ACTION BAR
+   ======================================== */
+.action-bar {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: var(--sp-3) var(--sp-6);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+}
+
+.action-group {
+    display: flex;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   COPY FEEDBACK (toast / live region)
+   ======================================== */
+.copy-feedback {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--success);
+    color: var(--on-accent);
+    padding: 12px 18px;
+    border-radius: var(--r-md);
+    font-weight: 600;
+    font-size: 0.88rem;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 200ms ease, transform 200ms ease;
+    pointer-events: none;
+    z-index: 1100;
+    max-width: min(92vw, 420px);
+}
+
+.copy-feedback.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Chybová varianta status toastu. */
+.copy-feedback.is-error {
+    background: var(--error);
+    color: var(--on-accent);
+}
+
+/* ========================================
+   MODAL
+   ======================================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 8, 18, 0.78);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-4);
+    opacity: 0;
+    visibility: hidden;
+    /* Přechod jen opacity, aby se `visibility` přepnula okamžitě a
+       dialog byl fokusovatelný ve stejném ticku, kdy se zobrazí. */
+    transition: opacity 180ms ease;
+    z-index: 1000;
+}
+
+.modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    width: 100%;
+    max-width: 480px;
+    max-height: min(80vh, 80dvh);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transform: scale(0.96);
+    transition: transform 180ms ease;
+}
+
+.modal-overlay.visible .modal {
+    transform: scale(1);
+}
+
+.modal-header {
+    padding: var(--sp-4) var(--sp-4);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-3);
+}
+
+.modal-header h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-sm);
+    transition: background var(--transition), color var(--transition);
+}
+
+.modal-close:hover {
+    color: var(--text);
+    background: var(--surface-2);
+}
+
+.modal-body {
+    padding: var(--sp-4);
+    overflow-y: auto;
+    max-height: min(58vh, 58dvh);
+}
+
+.modal-footer {
+    padding: var(--sp-4);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--sp-2);
+}
+
+/* Preset list */
+.preset-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+}
+
+.preset-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+}
+
+.preset-item-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text);
+    overflow-wrap: anywhere;
+    min-width: 0;
+}
+
+.preset-item-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.preset-item-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    background: rgba(0, 212, 168, 0.12);
+    color: var(--accent-mint);
+    border-radius: 999px;
+    margin-left: var(--sp-2);
+    white-space: nowrap;
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+/* Viditelný klávesnicový focus pro interaktivní prvky. */
+.btn:focus-visible,
+.modal-close:focus-visible,
+input[type="text"]:focus-visible,
+input[type="number"]:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.checkbox-group input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* Obsah jen pro čtečky (mimo vizuální layout). */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ========================================
+   M2C — KROKY, REŽIM, POKROČILÁ NASTAVENÍ
+   ======================================== */
+/* Toolbar pod hlavičkou: navigace kroků + přepínač režimu */
+.flow-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-6);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.step-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.step-nav-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: 0;
+    padding: 0;
+}
+
+.step-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    min-height: 40px;
+    border: 1px solid var(--border-control);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+.step-nav-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.step-nav-btn:hover {
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+}
+
+.step-nav-btn[aria-current="step"] {
+    background: var(--accent-weak);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.step-nav-btn[aria-current="step"] .step-nav-num {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+.step-nav-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* Přepínač Jednoduchý / Pokročilý (segmentovaný radiogroup) */
+.mode-switch {
+    display: inline-flex;
+    flex-shrink: 0;
+    border: 1px solid var(--border-control);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+}
+
+.mode-switch input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+.mode-switch label {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    min-height: 40px;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-right: 1px solid var(--border-control);
+    transition: background var(--transition), color var(--transition);
+}
+
+.mode-switch label:last-of-type {
+    border-right: none;
+}
+
+.mode-switch input[type="radio"]:checked + label {
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 650;
+}
+
+.mode-switch input[type="radio"]:focus-visible + label {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+}
+
+.mode-hint {
+    padding: var(--sp-2) var(--sp-6) 0;
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Nadpis kroku: číselná značka + titulek */
+.section-header .step-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 1;
+    flex-shrink: 0;
+}
+
+.step-title {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.section-header.inline {
+    padding: 0;
+    border-bottom: none;
+}
+
+.step-hint {
+    margin: 0;
+    padding: var(--sp-2) var(--sp-4) 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Blok pokročilých polí uvnitř kroku */
+.advanced-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-3);
+    border-top: 1px dashed var(--border-strong);
+}
+
+/* `display` above would otherwise override the UA `[hidden]` rule, so the
+   Simple-mode hiding must be reasserted explicitly. */
+.advanced-block[hidden] {
+    display: none;
+}
+
+.advanced-block-label {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+/* Upozornění na aktivní pokročilá nastavení (neblokující, ne chyba) */
+.adv-notice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+    background: rgba(0, 212, 168, 0.055);
+    border: 1px solid var(--tips-border);
+    border-radius: var(--r-md);
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+.adv-notice[hidden] {
+    display: none;
+}
+
+.adv-notice-text {
+    flex: 1 1 auto;
+}
+
+/* Compact parent-site footer beneath the existing workflow actions. */
+.site-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: 12px var(--sp-6);
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+}
+
+.site-footer p {
+    margin: 0;
+}
+
+.site-footer a {
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.human-in-the-loop {
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    letter-spacing: 0.07em;
+}
+
+/* ========================================
+   RESPONSIVE
+   Zachovává původní funkční breakpoint (920px): panely se
+   skládají pod sebe do dvou nezávisle scrollovatelných oblastí.
+   ======================================== */
+@media (max-width: 920px) {
+    .main-content {
+        flex-direction: column;
+    }
+
+    .form-panel {
+        width: 100%;
+        max-width: none;
+        min-width: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        max-height: 52vh;
+        max-height: 52dvh;
+    }
+
+    .output-panel {
+        min-height: 48vh;
+        min-height: 48dvh;
+    }
+}
+
+@media (max-width: 560px) {
+    .header,
+    .flow-toolbar,
+    .mode-hint,
+    .form-panel,
+    .output-panel,
+    .action-bar {
+        padding-left: var(--sp-4);
+        padding-right: var(--sp-4);
+    }
+
+    .header-branding {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: var(--sp-2);
+    }
+
+    .header h1 {
+        font-size: 1.12rem;
+    }
+
+    .flow-toolbar {
+        gap: var(--sp-2);
+    }
+
+    .step-nav {
+        flex-basis: 100%;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: var(--sp-4);
+    }
+
+    .preset-select {
+        min-width: 0;
+        width: 100%;
+        flex-basis: 100%;
+    }
+
+    .action-bar {
+        justify-content: flex-start;
+    }
+
+    .site-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        padding-left: var(--sp-4);
+        padding-right: var(--sp-4);
+    }
+}
+
+/* Větší dotykové plochy na dotykových zařízeních. */
+@media (pointer: coarse) {
+    .btn,
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea,
+    .toggle-group label,
+    .step-nav-btn,
+    .mode-switch label {
+        min-height: 44px;
+    }
+}
+
+/* ========================================
+   SCROLLBAR (jemná, laděná do světlého povrchu)
+   ======================================== */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 999px;
+    border: 2px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+* {
+    scrollbar-color: var(--border-strong) transparent;
+}
+
+/* ========================================
+   REDUCED MOTION
+   Respektuje uživatele, kteří chtějí méně pohybu: přechody a
+   animace jsou prakticky okamžité, změny stavu zůstávají viditelné.
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ========================================
+   FORCED COLORS / WINDOWS HIGH CONTRAST
+   Základní podpora: zachovat ohraničení a viditelný stav
+   vybraného přepínače i po odstranění barev systémem.
+   ======================================== */
+@media (forced-colors: active) {
+    .form-section,
+    .checkbox-group,
+    .toggle-group,
+    .modal,
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea,
+    .btn,
+    #generatedPrompt {
+        border: 1px solid CanvasText;
+    }
+
+    .btn:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    .modal-close:focus-visible,
+    .toggle-group input[type="radio"]:focus-visible + label {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+
+    /* Vybraný přepínač se v forced-colors nespoléhá jen na pozadí. */
+    .toggle-group input[type="radio"]:checked + label,
+    .mode-switch input[type="radio"]:checked + label {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+
+    /* Kroky a přepínač režimu: ohraničení a stav i bez barev. */
+    .step-nav-btn,
+    .mode-switch {
+        border: 1px solid CanvasText;
+    }
+
+    .step-nav-btn:focus-visible,
+    .mode-switch input[type="radio"]:focus-visible + label {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+
+    .step-nav-btn[aria-current="step"] {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+}
