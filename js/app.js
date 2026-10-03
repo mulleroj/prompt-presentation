@@ -503,13 +503,17 @@
                 else block.setAttribute('hidden', '');
             });
             const selectGroup = document.getElementById('illustrationSelectGroup');
+            const browser = document.getElementById('styleBrowser');
             const cards = document.getElementById('recommendedStyles');
+            const recommendations = document.querySelector('.style-recommendations');
             const toggle = document.getElementById('styleMoreToggle');
-            if (selectGroup && cards && toggle) {
+            if (selectGroup && browser && cards && recommendations && toggle) {
                 const expanded = toggle.getAttribute('aria-expanded') === 'true';
+                recommendations.hidden = advanced;
                 cards.hidden = advanced;
                 toggle.hidden = advanced;
-                selectGroup.hidden = advanced ? false : !expanded;
+                browser.hidden = !(advanced || expanded);
+                selectGroup.hidden = true;
             }
         }
 
@@ -740,96 +744,102 @@
         function setupStyleExplorer() {
             const select = document.getElementById('illustrationPreset');
             const selectGroup = document.getElementById('illustrationSelectGroup');
+            const browser = document.getElementById('styleBrowser');
             selectGroup.appendChild(select);
             Array.from(select.options).forEach(option => {
                 const meta = getIllustrationMeta(option.value);
                 option.textContent = meta.labelCs + ' — ' + meta.labelEn;
             });
-
             const grid = document.getElementById('recommendedStyles');
             RECOMMENDED_ILLUSTRATIONS.forEach(id => {
                 const meta = getIllustrationMeta(id);
-                const label = document.createElement('label');
-                label.className = 'style-card';
-                const radio = document.createElement('input');
-                radio.type = 'radio';
-                radio.name = 'recommendedIllustrationPreset';
-                radio.value = id;
+                const label = document.createElement('label'); label.className = 'style-card';
+                const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'recommendedIllustrationPreset'; radio.value = id;
                 radio.setAttribute('aria-label', meta.labelCs + '. Vhodné pro ' + meta.descriptionCs);
-                radio.addEventListener('keydown', event => {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        radio.click();
-                    }
-                });
-                const thumb = document.createElement('span');
-                thumb.className = 'style-card-thumb';
-                thumb.setAttribute('aria-hidden', 'true');
-                const img = document.createElement('img');
-                img.alt = '';
-                img.hidden = true;
+                radio.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); radio.click(); } });
+                const thumb = document.createElement('span'); thumb.className = 'style-card-thumb'; thumb.setAttribute('aria-hidden', 'true');
+                const img = document.createElement('img'); img.alt = ''; img.hidden = true;
                 img.addEventListener('load', () => { img.hidden = false; thumb.classList.add('has-image'); });
                 img.addEventListener('error', () => { img.hidden = true; thumb.classList.remove('has-image'); });
                 img.src = 'assets/style-previews/' + meta.previewFile;
-                const fallback = document.createElement('span');
-                fallback.className = 'style-thumb-fallback';
-                fallback.textContent = 'Náhled připravujeme';
-                thumb.append(img, fallback);
-                const title = document.createElement('span');
-                title.className = 'style-card-title';
-                title.textContent = meta.labelCs;
-                const description = document.createElement('span');
-                description.className = 'style-card-description';
-                description.textContent = 'Vhodné pro ' + (STYLE_CARD_USE_HINTS[id] || meta.descriptionCs);
-                label.append(radio, thumb, title, description);
-                grid.appendChild(label);
-                radio.addEventListener('change', () => {
-                    if (!radio.checked) return;
-                    select.value = radio.value;
-                    select.dispatchEvent(new Event('change', { bubbles: true }));
-                });
+                const fallback = document.createElement('span'); fallback.className = 'style-thumb-fallback'; fallback.textContent = 'Náhled připravujeme'; thumb.append(img, fallback);
+                const title = document.createElement('span'); title.className = 'style-card-title'; title.textContent = meta.labelCs;
+                const description = document.createElement('span'); description.className = 'style-card-description'; description.textContent = 'Vhodné pro ' + (STYLE_CARD_USE_HINTS[id] || meta.descriptionCs);
+                label.append(radio, thumb, title, description); grid.appendChild(label);
+                radio.addEventListener('change', () => { if (radio.checked) chooseStyle(radio.value); });
             });
-
+            Array.from(select.querySelectorAll('optgroup')).forEach(group => {
+                const section = document.createElement('section'); section.className = 'style-browser-group';
+                const heading = document.createElement('h4'); heading.textContent = group.label.replace(/^\S+\s+/, '');
+                const list = document.createElement('div'); list.className = 'style-browser-list'; list.setAttribute('role', 'listbox'); list.setAttribute('aria-label', heading.textContent);
+                group.querySelectorAll('option').forEach(option => {
+                    const meta = getIllustrationMeta(option.value);
+                    const button = document.createElement('button'); button.type = 'button'; button.className = 'style-browser-option'; button.dataset.styleId = option.value;
+                    button.setAttribute('role', 'option'); button.setAttribute('aria-selected', 'false'); button.tabIndex = -1;
+                    const cs = document.createElement('span'); cs.className = 'style-browser-cs'; cs.textContent = meta.labelCs;
+                    const en = document.createElement('span'); en.className = 'style-browser-en'; en.textContent = meta.labelEn;
+                    const check = document.createElement('span'); check.className = 'style-browser-selected'; check.textContent = '✓ Vybráno'; check.setAttribute('aria-hidden', 'true');
+                    button.append(cs, en, check);
+                    button.addEventListener('pointerenter', () => showStylePreview(button.dataset.styleId));
+                    button.addEventListener('focus', () => showStylePreview(button.dataset.styleId));
+                    button.addEventListener('click', () => chooseStyle(button.dataset.styleId));
+                    button.addEventListener('keydown', event => {
+                        const items = Array.from(browser.querySelectorAll('.style-browser-option')); const index = items.indexOf(button); let next = null;
+                        if (event.key === 'ArrowDown') next = items[Math.min(index + 1, items.length - 1)];
+                        if (event.key === 'ArrowUp') next = items[Math.max(index - 1, 0)];
+                        if (event.key === 'Home') next = items[0]; if (event.key === 'End') next = items[items.length - 1];
+                        if (next) { event.preventDefault(); next.focus(); next.scrollIntoView({ block: 'nearest' }); }
+                        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); chooseStyle(button.dataset.styleId); }
+                        if (event.key === 'Escape') { event.preventDefault(); showStylePreview(select.value); browser.querySelector('[data-style-id="' + CSS.escape(select.value) + '"]')?.focus(); }
+                    });
+                    list.appendChild(button);
+                });
+                section.append(heading, list); browser.appendChild(section);
+            });
+            browser.addEventListener('pointerleave', () => { if (!browser.contains(document.activeElement)) showStylePreview(select.value); });
+            browser.addEventListener('focusout', event => { if (!browser.contains(event.relatedTarget) && !browser.matches(':hover')) showStylePreview(select.value); });
             const toggle = document.getElementById('styleMoreToggle');
             toggle.addEventListener('click', () => {
-                const expanded = toggle.getAttribute('aria-expanded') === 'true';
-                const next = !expanded;
-                toggle.setAttribute('aria-expanded', String(next));
-                selectGroup.hidden = !next;
-                toggle.textContent = next ? 'Skrýt další styly' : 'Zobrazit všech 46 stylů';
+                const next = toggle.getAttribute('aria-expanded') !== 'true'; toggle.setAttribute('aria-expanded', String(next));
+                browser.hidden = !next; toggle.textContent = next ? 'Skrýt další styly' : 'Zobrazit všech 46 stylů';
             });
             select.addEventListener('change', updateStyleExplorer);
         }
 
-        function updateStyleExplorer() {
+        function chooseStyle(id) {
             const select = document.getElementById('illustrationPreset');
-            if (!select) return;
-            const id = select.value;
-            const meta = getIllustrationMeta(id);
-            document.querySelectorAll('input[name="recommendedIllustrationPreset"]').forEach(radio => {
-                radio.checked = radio.value === id;
+            if (!select || select.value === id) { updateStyleExplorer(); return; }
+            select.value = id; select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        function showStylePreview(id) { renderStylePreview(id); }
+
+        function updateStyleExplorer() {
+            const select = document.getElementById('illustrationPreset'); if (!select) return;
+            const id = select.value; const meta = getIllustrationMeta(id);
+            document.querySelectorAll('input[name="recommendedIllustrationPreset"]').forEach(radio => { radio.checked = radio.value === id; });
+            document.querySelectorAll('.style-browser-option').forEach(button => {
+                const selected = button.dataset.styleId === id; button.setAttribute('aria-selected', String(selected));
+                button.classList.toggle('is-selected', selected); button.tabIndex = selected ? 0 : -1;
             });
             const note = document.getElementById('styleCurrentNote');
-            if (!RECOMMENDED_ILLUSTRATIONS.includes(id)) {
-                note.textContent = 'Aktuálně je zvolen další styl: ' + meta.labelEn;
-                note.hidden = false;
-            } else note.hidden = true;
+            if (!RECOMMENDED_ILLUSTRATIONS.includes(id)) { note.textContent = 'Aktuálně je zvolen další styl: ' + meta.labelEn; note.hidden = false; } else note.hidden = true;
+            renderStylePreview(id);
+        }
 
+        function renderStylePreview(id) {
+            const meta = getIllustrationMeta(id);
             document.getElementById('stylePreviewName').textContent = meta.labelCs;
             document.getElementById('stylePreviewDescription').textContent = RECOMMENDED_ILLUSTRATIONS.includes(id)
                 ? 'Vhodné pro ' + meta.descriptionCs
                 : (meta.descriptionCs ? meta.descriptionCs + ' Náhled tohoto stylu zatím není k dispozici.' : 'Náhled tohoto stylu zatím není k dispozici.');
             document.getElementById('stylePreviewEnglish').textContent = meta.labelEn;
-            const img = document.getElementById('stylePreviewImg');
-            const fallback = document.getElementById('stylePreviewFallback');
-            if (document.getElementById('stylePreviewImage').dataset.styleId === id) return;
-            document.getElementById('stylePreviewImage').dataset.styleId = id;
-            img.hidden = true;
-            fallback.hidden = false;
-            img.onload = () => { img.hidden = false; fallback.hidden = true; };
-            img.onerror = () => { img.hidden = true; fallback.hidden = false; };
-            if (meta.previewFile) img.src = 'assets/style-previews/' + meta.previewFile;
-            else img.removeAttribute('src');
+            const img = document.getElementById('stylePreviewImg'); const fallback = document.getElementById('stylePreviewFallback');
+            const image = document.getElementById('stylePreviewImage');
+            if (image.dataset.styleId === id) return;
+            image.dataset.styleId = id; img.hidden = true; fallback.hidden = false;
+            img.onload = () => { img.hidden = false; fallback.hidden = true; }; img.onerror = () => { img.hidden = true; fallback.hidden = false; };
+            if (meta.previewFile) img.src = 'assets/style-previews/' + meta.previewFile; else img.removeAttribute('src');
             fallback.textContent = meta.previewFile ? 'Náhled připravujeme' : 'Náhled tohoto stylu zatím není k dispozici.';
         }
 

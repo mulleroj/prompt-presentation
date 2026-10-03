@@ -203,8 +203,8 @@
                 <p class="step-hint">Vizuální styl a instrukce k obrázkům.</p>
                 <div class="section-content">
                     <div class="style-explorer" id="styleExplorer">
-                        <div class="style-picker-column">
-                            <div class="style-select-group" id="illustrationSelectGroup" hidden>
+                        <div class="style-catalog-controls">
+                            <div class="style-select-group" id="illustrationSelectGroup" hidden aria-hidden="true">
                                 <label for="illustrationPreset">Všechny styly</label>
                                 <select id="illustrationPreset">
                                     <optgroup label="🖌️ Ilustrační &amp; Výtvarné">
@@ -269,13 +269,14 @@
                                     </optgroup>
                                 </select>
                             </div>
-                            <fieldset class="style-recommendations">
-                                <legend>Doporučené styly</legend>
-                                <div class="style-card-grid" id="recommendedStyles" role="radiogroup" aria-label="Doporučené styly ilustrací"></div>
-                                <p class="style-current-note" id="styleCurrentNote" hidden></p>
-                            </fieldset>
-                            <button class="style-more-toggle" id="styleMoreToggle" type="button" aria-expanded="false" aria-controls="illustrationSelectGroup">Zobrazit všech 46 stylů</button>
+                            <div class="style-browser" id="styleBrowser" aria-label="Všechny vizuální styly" hidden></div>
+                            <button class="style-more-toggle" id="styleMoreToggle" type="button" aria-expanded="false" aria-controls="styleBrowser">Zobrazit všech 46 stylů</button>
                         </div>
+                        <fieldset class="style-recommendations">
+                            <legend>Doporučené styly</legend>
+                            <div class="style-card-grid" id="recommendedStyles" role="radiogroup" aria-label="Doporučené styly ilustrací"></div>
+                            <p class="style-current-note" id="styleCurrentNote" hidden></p>
+                        </fieldset>
                         <aside class="style-preview" aria-labelledby="stylePreviewTitle" aria-live="polite">
                             <h3 id="stylePreviewTitle">Náhled stylu</h3>
                             <div class="style-preview-image" id="stylePreviewImage">
