@@ -1393,3 +1393,28 @@ textarea:focus-visible,
         outline-offset: -2px;
     }
 }
+
+/* Advanced visual Style Browser; the native select remains the state source. */
+.style-browser[hidden] { display: none; }
+.style-browser { max-height: 490px; overflow: auto; overscroll-behavior: contain; border: 1px solid var(--border-control); border-radius: var(--r-md); background: rgba(5,9,20,.45); scrollbar-color: var(--accent-mint) rgba(255,255,255,.08); scrollbar-width: thin; }
+.style-browser-group h4 { position: sticky; top: 0; z-index: 1; margin: 0; padding: 9px 12px; border-bottom: 1px solid var(--border-control); background: #101a2b; color: var(--text-secondary); font-size: .72rem; }
+.style-browser-list { display: grid; gap: 2px; padding: 4px; }
+.style-browser-option { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 1px 8px; min-height: 42px; padding: 6px 9px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--text); text-align: left; cursor: pointer; }
+.style-browser-option:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.style-browser-option:focus-visible { outline: 2px solid var(--accent-mint); outline-offset: -2px; }
+.style-browser-option.is-selected { border-color: var(--accent); box-shadow: inset 0 0 0 1px rgba(255,199,89,.14); }
+.style-browser-cs { font-size: .8rem; font-weight: 600; }
+.style-browser-en { grid-column: 1; color: var(--text-muted); font-size: .68rem; }
+.style-browser-selected { grid-column: 2; grid-row: 1 / span 2; color: var(--accent-mint); font-size: .68rem; font-weight: 650; }
+.style-browser-option[aria-selected="false"] .style-browser-selected { visibility: hidden; }
+
+@media (min-width: 921px) {
+    .style-catalog-controls { display: contents; }
+    .style-browser { grid-column: 1; grid-row: 2; }
+    .style-more-toggle { grid-column: 1; grid-row: 1; justify-self: start; }
+    body:has(#modeAdvanced:checked) .style-browser { grid-row: 1 / span 2; }
+}
+
+@media (max-width: 920px) {
+    .style-browser { max-height: 360px; }
+}
