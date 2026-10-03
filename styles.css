@@ -521,6 +521,50 @@ textarea {
     resize: none;
     color: var(--text);
     box-shadow: var(--shadow-sm);
+    height: clamp(360px, 48vh, 450px);
+    min-height: 0;
+    overflow: auto;
+    flex: 0 0 auto;
+}
+
+/* Style picker and future local preview assets (M2D). */
+.style-explorer { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-4); }
+.style-picker-column { min-width: 0; }
+.style-recommendations { min-width: 0; margin: 0; padding: 0; border: 0; }
+.style-recommendations legend { margin-bottom: var(--sp-3); color: var(--text); font-size: .9rem; font-weight: 600; }
+.style-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.style-card-grid[hidden] { display: none; }
+.style-card { position: relative; display: flex; min-width: 0; min-height: 142px; flex-direction: column; gap: 6px; padding: 9px; border: 1px solid var(--border-control); border-radius: var(--r-md); background: rgba(255,255,255,.025); cursor: pointer; transition: border-color var(--transition), background var(--transition); }
+.style-card:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.style-card:has(input:checked) { border: 2px solid var(--accent); padding: 8px; box-shadow: inset 0 0 0 1px rgba(255,199,89,.16); }
+.style-card input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.style-card:has(input:focus-visible) { outline: 2px solid var(--accent-mint); outline-offset: 3px; }
+.style-card-thumb { display: flex; aspect-ratio: 16 / 10; align-items: center; justify-content: center; overflow: hidden; border-radius: var(--r-sm); background: #0b1425; color: var(--text-secondary); font-size: .68rem; text-align: center; }
+.style-card-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.style-card-thumb img[hidden] { display: none; }
+.style-card-thumb.has-image .style-thumb-fallback { display: none; }
+.style-thumb-fallback { padding: 6px; }
+.style-card-title { color: var(--text); font-size: .82rem; font-weight: 650; line-height: 1.25; }
+.style-card-description { color: var(--text-secondary); font-size: .71rem; line-height: 1.35; }
+.style-current-note { margin: var(--sp-3) 0 0; color: var(--accent-mint); font-size: .78rem; }
+.style-more-toggle { margin-top: var(--sp-3); padding: 8px 0; border: 0; background: transparent; color: var(--accent-mint); font: inherit; font-size: .82rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.style-more-toggle:focus-visible { outline: 2px solid var(--accent-mint); outline-offset: 3px; border-radius: 3px; }
+.style-select-group { display: flex; flex-direction: column; gap: 6px; margin-top: var(--sp-3); }
+.style-select-group[hidden] { display: none; }
+.style-preview { align-self: start; min-width: 0; padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--r-md); background: rgba(9,16,30,.58); }
+.style-preview h3 { margin: 0 0 var(--sp-3); color: var(--text); font-size: .9rem; }
+.style-preview-image { display: grid; aspect-ratio: 16 / 10; min-height: 0; place-items: center; overflow: hidden; border: 1px solid var(--border-control); border-radius: var(--r-sm); background: #0b1425; }
+.style-preview-image img { width: 100%; height: 100%; object-fit: contain; }
+.style-preview-image img[hidden] { display: none; }
+.style-preview-fallback { display: flex; min-height: 100px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px; color: var(--text-secondary); font-size: .78rem; text-align: center; }
+.style-preview-symbol { color: var(--accent-mint); font-size: 1.5rem; }
+.style-preview h4 { margin: var(--sp-3) 0 6px; color: var(--text); font-size: .98rem; }
+.style-preview p { margin: 0; color: var(--text-secondary); font-size: .8rem; line-height: 1.5; }
+.style-preview .style-preview-en { margin-top: 8px; color: var(--text-muted); font-size: .72rem; }
+
+@media (min-width: 1100px) {
+    .style-explorer { grid-template-columns: minmax(0, 1fr) minmax(270px, .95fr); align-items: start; }
+    .style-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 #generatedPrompt:focus {
@@ -1157,6 +1201,11 @@ textarea:focus-visible,
         padding-left: var(--sp-4);
         padding-right: var(--sp-4);
     }
+
+    #generatedPrompt { height: 310px; }
+    .style-card { min-height: 150px; padding: 9px; }
+    .style-card-thumb { height: auto; }
+    .style-preview-fallback { min-height: 125px; }
 }
 
 /* Větší dotykové plochy na dotykových zařízeních. */

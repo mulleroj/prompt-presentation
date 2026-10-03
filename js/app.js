@@ -61,6 +61,24 @@
             'data-storytelling': 'Data storytelling without charts, explanatory visuals, numbers presented through imagery.'
         };
 
+        // UX metadata only. ILLUSTRATION_SNIPPETS remains the sole prompt source.
+        // Future preview files must show the same reference educational scene so
+        // teachers compare visual style rather than different subject matter.
+        const ILLUSTRATION_META = {
+            'textbook-modern': { labelCs: 'Moderní učebnice', labelEn: 'Textbook Modern', descriptionCs: 'Běžnou výuku, vysvětlování pojmů a shrnutí.', recommended: true, previewFile: 'textbook-modern.webp' },
+            'infographic-clean': { labelCs: 'Čistá infografika', labelEn: 'Infographic Clean', descriptionCs: 'Fakta, přehledy, porovnání a stručná shrnutí.', recommended: true, previewFile: 'infographic-clean.webp' },
+            'flat-vector': { labelCs: 'Plochá ilustrace', labelEn: 'Flat Vector Minimal', descriptionCs: 'Univerzální moderní vzdělávací prezentace.', recommended: true, previewFile: 'flat-vector.webp' },
+            'step-by-step': { labelCs: 'Postupové schéma', labelEn: 'Step-by-Step Diagram', descriptionCs: 'Procesy, návody, pracovní postupy a vysvětlení krok za krokem.', recommended: true, previewFile: 'step-by-step.webp' },
+            'narrative-visual': { labelCs: 'Příběh v obrazech', labelEn: 'Narrative / Visual Story', descriptionCs: 'Literaturu, historii, společenská témata a vyprávění.', recommended: true, previewFile: 'narrative-visual.webp' },
+            'watercolor': { labelCs: 'Akvarel', labelEn: 'Watercolor Sketch', descriptionCs: 'Jazyky, literaturu a jemnější humanitní témata.', recommended: true, previewFile: 'watercolor.webp' },
+            'engineering-diagram': { labelCs: 'Technický nákres', labelEn: 'Engineering Diagram', descriptionCs: 'Techniku, elektro, stroje a vysvětlování principů zařízení.', recommended: true, previewFile: 'engineering-diagram.webp' },
+            'research-academic': { labelCs: 'Akademický styl', labelEn: 'Research / Academic', descriptionCs: 'Odborná, vědecká a formálnější témata.', recommended: true, previewFile: 'research-academic.webp' }
+        };
+        const RECOMMENDED_ILLUSTRATIONS = [
+            'textbook-modern', 'infographic-clean', 'flat-vector', 'step-by-step',
+            'narrative-visual', 'watercolor', 'engineering-diagram', 'research-academic'
+        ];
+
         // Atmosphere snippets (English for prompt)
         const ATMOSPHERE_SNIPPETS = {
             'friendly': 'Friendly and encouraging tone throughout.',
@@ -435,6 +453,7 @@
         function onFormChange() {
             saveState();
             generatePrompt();
+            updateStyleExplorer();
         }
 
         // ========================================
@@ -472,6 +491,15 @@
                 if (advanced) block.removeAttribute('hidden');
                 else block.setAttribute('hidden', '');
             });
+            const selectGroup = document.getElementById('illustrationSelectGroup');
+            const cards = document.getElementById('recommendedStyles');
+            const toggle = document.getElementById('styleMoreToggle');
+            if (selectGroup && cards && toggle) {
+                const expanded = toggle.getAttribute('aria-expanded') === 'true';
+                cards.hidden = advanced;
+                toggle.hidden = advanced;
+                selectGroup.hidden = advanced ? false : !expanded;
+            }
         }
 
         function updateModeHint(mode) {
@@ -531,7 +559,7 @@
             options = options || {};
             if (mode === 'simple') {
                 const active = document.activeElement;
-                if (active && active.closest && active.closest('[data-advanced]')) {
+                if (active && active.closest && (active.closest('[data-advanced]') || active.closest('#illustrationSelectGroup'))) {
                     const modeRadio = document.getElementById('modeSimple');
                     if (modeRadio) modeRadio.focus();
                 }
@@ -591,9 +619,118 @@
             document.querySelectorAll('.step-nav-btn').forEach(btn => {
                 btn.addEventListener('click', () => goToStep(btn.getAttribute('data-step')));
             });
+            setupStyleExplorer();
             // Start in Simple: default checked in HTML; ensure DOM matches.
             applyModeVisibility(getViewMode());
             updateModeHint(getViewMode());
+            updateStyleExplorer();
+        }
+
+        function getIllustrationMeta(id) {
+            if (ILLUSTRATION_META[id]) return ILLUSTRATION_META[id];
+            const option = document.querySelector(`#illustrationPreset option[value="${CSS.escape(id)}"]`);
+            const raw = option ? option.textContent.trim() : id;
+            const match = raw.match(/^(.+?)\s*\((.+)\)$/);
+            const labelEn = match ? match[1].trim() : raw;
+            const labelCs = match ? match[2].trim() : id.replace(/-/g, ' ');
+            ILLUSTRATION_META[id] = { labelCs, labelEn, descriptionCs: ILLUSTRATION_SNIPPETS[id] || '', recommended: false, previewFile: null };
+            return ILLUSTRATION_META[id];
+        }
+
+        function setupStyleExplorer() {
+            const select = document.getElementById('illustrationPreset');
+            const selectGroup = document.getElementById('illustrationSelectGroup');
+            selectGroup.appendChild(select);
+            Array.from(select.options).forEach(option => {
+                const meta = getIllustrationMeta(option.value);
+                option.textContent = meta.labelCs + ' — ' + meta.labelEn;
+            });
+
+            const grid = document.getElementById('recommendedStyles');
+            RECOMMENDED_ILLUSTRATIONS.forEach(id => {
+                const meta = getIllustrationMeta(id);
+                const label = document.createElement('label');
+                label.className = 'style-card';
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'recommendedIllustrationPreset';
+                radio.value = id;
+                radio.setAttribute('aria-label', meta.labelCs + '. Vhodné pro ' + meta.descriptionCs);
+                radio.addEventListener('keydown', event => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        radio.click();
+                    }
+                });
+                const thumb = document.createElement('span');
+                thumb.className = 'style-card-thumb';
+                thumb.setAttribute('aria-hidden', 'true');
+                const img = document.createElement('img');
+                img.alt = '';
+                img.hidden = true;
+                img.addEventListener('load', () => { img.hidden = false; thumb.classList.add('has-image'); });
+                img.addEventListener('error', () => { img.hidden = true; thumb.classList.remove('has-image'); });
+                img.src = 'assets/style-previews/' + meta.previewFile;
+                const fallback = document.createElement('span');
+                fallback.className = 'style-thumb-fallback';
+                fallback.textContent = 'Náhled připravujeme';
+                thumb.append(img, fallback);
+                const title = document.createElement('span');
+                title.className = 'style-card-title';
+                title.textContent = meta.labelCs;
+                const description = document.createElement('span');
+                description.className = 'style-card-description';
+                description.textContent = 'Vhodné pro ' + meta.descriptionCs;
+                label.append(radio, thumb, title, description);
+                grid.appendChild(label);
+                radio.addEventListener('change', () => {
+                    if (!radio.checked) return;
+                    select.value = radio.value;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            });
+
+            const toggle = document.getElementById('styleMoreToggle');
+            toggle.addEventListener('click', () => {
+                const expanded = toggle.getAttribute('aria-expanded') === 'true';
+                const next = !expanded;
+                toggle.setAttribute('aria-expanded', String(next));
+                selectGroup.hidden = !next;
+                toggle.textContent = next ? 'Skrýt další styly' : 'Zobrazit všech 46 stylů';
+            });
+            select.addEventListener('change', updateStyleExplorer);
+        }
+
+        function updateStyleExplorer() {
+            const select = document.getElementById('illustrationPreset');
+            if (!select) return;
+            const id = select.value;
+            const meta = getIllustrationMeta(id);
+            document.querySelectorAll('input[name="recommendedIllustrationPreset"]').forEach(radio => {
+                radio.checked = radio.value === id;
+            });
+            const note = document.getElementById('styleCurrentNote');
+            if (!RECOMMENDED_ILLUSTRATIONS.includes(id)) {
+                note.textContent = 'Aktuálně je zvolen další styl: ' + meta.labelEn;
+                note.hidden = false;
+            } else note.hidden = true;
+
+            document.getElementById('stylePreviewName').textContent = meta.labelCs;
+            document.getElementById('stylePreviewDescription').textContent = RECOMMENDED_ILLUSTRATIONS.includes(id)
+                ? 'Vhodné pro ' + meta.descriptionCs
+                : (meta.descriptionCs ? meta.descriptionCs + ' Náhled tohoto stylu zatím není k dispozici.' : 'Náhled tohoto stylu zatím není k dispozici.');
+            document.getElementById('stylePreviewEnglish').textContent = meta.labelEn;
+            const img = document.getElementById('stylePreviewImg');
+            const fallback = document.getElementById('stylePreviewFallback');
+            if (document.getElementById('stylePreviewImage').dataset.styleId === id) return;
+            document.getElementById('stylePreviewImage').dataset.styleId = id;
+            img.hidden = true;
+            fallback.hidden = false;
+            img.onload = () => { img.hidden = false; fallback.hidden = true; };
+            img.onerror = () => { img.hidden = true; fallback.hidden = false; };
+            if (meta.previewFile) img.src = 'assets/style-previews/' + meta.previewFile;
+            else img.removeAttribute('src');
+            fallback.textContent = meta.previewFile ? 'Náhled připravujeme' : 'Náhled tohoto stylu zatím není k dispozici.';
         }
 
         // ========================================
@@ -645,6 +782,7 @@
             // Handle custom language visibility
             const wrapper = document.getElementById('customLanguageWrapper');
             wrapper.classList.toggle('visible', state.outputLanguage === 'custom');
+            updateStyleExplorer();
         }
 
         /**
