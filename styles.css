@@ -564,14 +564,12 @@ textarea {
 
 /* Appearance uses the full form panel while its step is active. */
 @media (min-width: 921px) {
-    body:has(.step-nav-btn[aria-current="step"][data-step="step3"]) .main-content,
-    body:has(#step3:focus) .main-content {
+    body:has(.step-nav-btn[aria-current="step"][data-step="step3"]) .main-content {
         flex-direction: column;
         overflow: visible;
     }
 
-    body:has(.step-nav-btn[aria-current="step"][data-step="step3"]) .form-panel,
-    body:has(#step3:focus) .form-panel {
+    body:has(.step-nav-btn[aria-current="step"][data-step="step3"]) .form-panel {
         width: 100%;
         max-width: none;
         min-width: 0;
@@ -580,8 +578,7 @@ textarea {
         border-right: 0;
     }
 
-    body:has(.step-nav-btn[aria-current="step"][data-step="step3"]) #step3,
-    body:has(#step3:focus) #step3 {
+    body:has(.step-nav-btn[aria-current="step"][data-step="step3"]) #step3 {
         width: 100%;
         max-width: none;
     }

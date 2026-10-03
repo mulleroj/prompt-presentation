@@ -605,11 +605,84 @@
             });
         }
 
+        let pendingScrollSpyTarget = null;
+        let pendingScrollSpyTimer = null;
+
+        function clearPendingScrollSpyTarget() {
+            pendingScrollSpyTarget = null;
+            if (pendingScrollSpyTimer) {
+                clearTimeout(pendingScrollSpyTimer);
+                pendingScrollSpyTimer = null;
+            }
+        }
+
+        function holdScrollSpyTarget(stepId) {
+            clearPendingScrollSpyTarget();
+            if (!['step1', 'step2', 'step3'].includes(stepId)) return;
+            pendingScrollSpyTarget = stepId;
+            pendingScrollSpyTimer = window.setTimeout(clearPendingScrollSpyTarget, 2000);
+        }
+
+        /** Keep step navigation in sync with the section most visible while scrolling. */
+        function setupStepScrollSpy() {
+            const sectionIds = ['step1', 'step2', 'step3'];
+            const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+
+            document.addEventListener('focusin', event => {
+                const step = event.target.closest?.('#step1, #step2, #step3');
+                if (step) setCurrentStep(step.id);
+            });
+
+            if (!('IntersectionObserver' in window) || sections.length !== sectionIds.length) return;
+
+            const visibleHeights = new Map(sectionIds.map(id => [id, 0]));
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    visibleHeights.set(entry.target.id, entry.isIntersecting ? entry.intersectionRect.height : 0);
+                });
+
+                const dominant = sectionIds
+                    .map(id => ({ id, height: visibleHeights.get(id) || 0 }))
+                    .sort((a, b) => b.height - a.height)[0];
+                const currentStep = document.querySelector('.step-nav-btn[aria-current="step"]')?.dataset.step;
+                const currentHeight = visibleHeights.get(currentStep) || 0;
+                const minimumVisibleHeight = window.innerHeight * 0.18;
+                const hysteresis = Math.max(56, window.innerHeight * 0.08);
+
+                if (!dominant || dominant.height < minimumVisibleHeight) return;
+                if (pendingScrollSpyTarget) {
+                    if (dominant.id !== pendingScrollSpyTarget || dominant.height < minimumVisibleHeight) return;
+                    clearPendingScrollSpyTarget();
+                }
+                if (dominant.id === currentStep) return;
+                if (currentHeight === 0 || dominant.height >= currentHeight + hysteresis) {
+                    setCurrentStep(dominant.id);
+                }
+            }, {
+                root: null,
+                rootMargin: '-8% 0px -12% 0px',
+                threshold: [0, 0.1, 0.2, 0.35, 0.5, 0.65, 0.8, 1]
+            });
+
+            sections.forEach(section => observer.observe(section));
+
+            const releaseTargetOnUserInput = () => clearPendingScrollSpyTarget();
+            window.addEventListener('wheel', releaseTargetOnUserInput, { passive: true });
+            window.addEventListener('touchstart', releaseTargetOnUserInput, { passive: true });
+            document.addEventListener('pointerdown', releaseTargetOnUserInput, { passive: true });
+            document.addEventListener('keydown', event => {
+                if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) {
+                    releaseTargetOnUserInput();
+                }
+            }, { passive: true });
+        }
+
         /** Navigate to a step: scroll into view + focus its heading region.
          *  No reload, no validation gate, values are untouched. */
         function goToStep(stepId) {
             const section = document.getElementById(stepId);
             if (!section) return;
+            holdScrollSpyTarget(stepId);
             setCurrentStep(stepId);
             section.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
             section.focus({ preventScroll: true });
@@ -630,6 +703,7 @@
             document.querySelectorAll('.step-nav-btn').forEach(btn => {
                 btn.addEventListener('click', () => goToStep(btn.getAttribute('data-step')));
             });
+            setupStepScrollSpy();
             setupStyleExplorer();
             // Start in Simple: default checked in HTML; ensure DOM matches.
             applyModeVisibility(getViewMode());
