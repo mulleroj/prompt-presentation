@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Notebook – Generátor promptů pro prezentace</title>
+    <title>Generátor prezentací Gemini Notebook | AI ve Výuce</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -12,9 +12,15 @@
              HEADER
              ======================================== -->
         <header class="header">
-            <div>
-                <h1>Gemini Notebook – Generátor promptů pro prezentace</h1>
-                <p class="header-subtitle">Připravte obsahový prompt a nastavení prezentace pro Gemini Notebook.</p>
+            <div class="header-branding">
+                <a class="brand-link" href="https://ai-ve-vyuce.netlify.app/" aria-label="AI ve Výuce – přejít na hlavní web">
+                    <span aria-hidden="true">🤖</span>
+                    <span>AI ve Výuce</span>
+                </a>
+                <div class="header-copy">
+                    <h1>Generátor prezentací Gemini Notebook</h1>
+                    <p class="header-subtitle">Připravte zadání pro prezentaci z vašich zdrojů.</p>
+                </div>
             </div>
             <div class="preset-controls">
                 <select id="presetSelect" class="preset-select" aria-label="Vyberte uložený preset">
@@ -319,8 +325,10 @@
                 </div>
                 <section class="notebook-settings" aria-labelledby="notebookSettingsTitle">
                     <h3 id="notebookSettingsTitle">Nastavte v Gemini Notebooku</h3>
+                    <p class="notebook-settings-hint">Tyto hodnoty nastavte přímo v Gemini Notebooku.</p>
                     <pre id="notebookSettings" aria-live="polite"></pre>
                 </section>
+                <label class="prompt-label" for="generatedPrompt">Vlastní prompt</label>
                 <textarea id="generatedPrompt" readonly></textarea>
                 <div class="tips-section">
                     <h3>Tipy pro lepší výsledky</h3>
@@ -338,7 +346,7 @@
              ======================================== -->
         <footer class="action-bar">
             <div class="action-group">
-                <button class="btn btn-primary" onclick="copyToClipboard()">📋 Kopírovat</button>
+                <button class="btn btn-primary" onclick="copyToClipboard()">📋 Kopírovat prompt</button>
                 <button class="btn" onclick="resetForm()">🔄 Reset</button>
             </div>
             <div class="action-group">
@@ -348,6 +356,10 @@
                 <button class="btn" onclick="document.getElementById('importFile').click()">📥 Import JSON</button>
                 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importPreset(event)">
             </div>
+        </footer>
+        <footer class="site-footer">
+            <p>© 2026 <a href="https://ai-ve-vyuce.netlify.app/">AI ve Výuce</a></p>
+            <p class="human-in-the-loop">AI + 👤 | HUMAN IN THE LOOP</p>
         </footer>
     </div>
 

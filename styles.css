@@ -1,55 +1,56 @@
 /* ============================================================
-   Gemini Notebook Generátor promptů — vizuální systém M2B2
-   „Klidný světlý pracovní list"
-   Vynucené světlé učitelské téma bez ohledu na systémové
-   barevné schéma (M2B2.2 – automatický tmavý režim odstraněn).
-   Vše řízeno CSS tokeny; žádný JS, žádný externí font,
-   žádný síťový požadavek.
+   Gemini Notebook prompt generator — visual integration
+   with AI ve Výuce. Compact teacher workflow; no marketing
+   effects, external fonts, or new network requests.
    ============================================================ */
 
 /* ========================================
-   DESIGN TOKENS (jediné, vynucené světlé téma)
+   DESIGN TOKENS
    ======================================== */
 :root {
-    /* Nativní barevné schéma (form controls, select popup, spinnery,
-       scrollbary) – vynuceno na světlé bez ohledu na systémové téma. */
-    color-scheme: light;
+    /* Native form controls and select menus follow the dark interface. */
+    color-scheme: dark;
 
-    /* Plochy a text */
-    --bg: #f5f7fa;              /* pozadí stránky – studená světlá šeď */
-    --surface: #ffffff;         /* karty, panely */
-    --surface-2: #eef1f5;       /* jemné bloky, hover, výstupní panel */
-    --surface-3: #e7ecf2;       /* zvýrazněný povrch */
-    --border: #dce1e8;          /* jemné dekorativní ohraničení (karty, panely) */
-    --border-strong: #c3ccd8;   /* dekorativní silnější (scrollbar) */
-    --border-control: #7e8b9d;  /* hranice ovládacích prvků – kontrast ≥ 3:1 vůči povrchu i okolí */
-    --text: #1f2733;            /* hlavní text */
-    --text-secondary: #3d4757;  /* popisky polí */
-    --text-muted: #5b6472;      /* pomocný slabší text (kontrast ≥ 4.5:1) */
+    /* AI ve Výuce palette */
+    --bg: #0a0f1e;
+    --bg-secondary: #0d1530;
+    --surface: rgba(255, 255, 255, 0.05);
+    --surface-2: #0d1530;
+    --surface-3: rgba(255, 255, 255, 0.09);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.20);
+    /* Stronger control border keeps inputs identifiable on dark cards. */
+    --border-control: #7d8eaa;
+    --text: #eaf0fb;
+    --text-secondary: #8fa3c8;
+    --text-muted: #5a6e8a;
 
-    /* Akcent a stavy */
-    --accent: #2563d6;          /* klidná modrá – primární akce, focus */
-    --accent-hover: #1c50bf;    /* akcent hover/active */
-    --accent-weak: #e8f0fe;     /* velmi světlé akcentní pozadí */
-    --on-accent: #ffffff;       /* text/ikona na barevné ploše */
-    --success: #0f7a48;         /* uloženo / hotovo */
-    --error: #c23b3b;           /* chyba */
-    --focus-ring: #2563d6;      /* viditelný focus */
-    --focus-shadow: rgba(37,99,214,0.22); /* jemný focus glow */
-    --tips-border: #a9c6f2;     /* ohraničení tip callout */
+    /* Accents and states */
+    --accent: #f5a623;
+    --accent-hover: #ffbd45;
+    --accent-weak: rgba(245, 166, 35, 0.13);
+    --on-accent: #111827;
+    --accent-mint: #00d4a8;
+    --accent-blue: #4a90e2;
+    --success: #00d4a8;
+    --error: #ff737d;
+    --focus-ring: #00d4a8;
+    --focus-shadow: rgba(0, 212, 168, 0.16);
+    --tips-border: rgba(0, 212, 168, 0.35);
 
     /* Typografie */
-    --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-heading: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
     --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
 
     /* Zaoblení */
-    --r-sm: 6px;
-    --r-md: 10px;
-    --r-lg: 14px;
+    --r-sm: 10px;
+    --r-md: 16px;
+    --r-lg: 20px;
 
     /* Stíny (jen 2 úrovně, střídmé) */
-    --shadow-sm: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.08);
-    --shadow-md: 0 10px 28px rgba(16,24,40,0.14);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.18), 0 6px 18px rgba(0, 0, 0, 0.14);
+    --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.38);
 
     /* Spacing škála (4px základ; deklarovány jen skutečně užívané kroky) */
     --sp-2: 8px;
@@ -84,6 +85,13 @@ body {
     text-rendering: optimizeLegibility;
 }
 
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--font-heading);
+}
+
 /* ========================================
    APP SHELL / LAYOUT
    ======================================== */
@@ -99,7 +107,7 @@ body {
 
 /* Header */
 .header {
-    background: var(--surface);
+    background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
     padding: var(--sp-4) var(--sp-6);
     display: flex;
@@ -109,8 +117,48 @@ body {
     gap: var(--sp-4);
 }
 
+.header-branding {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    flex: 1 1 520px;
+    min-width: 0;
+}
+
+.brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    color: var(--accent);
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: rgba(245, 166, 35, 0.55);
+    text-underline-offset: 4px;
+    white-space: nowrap;
+}
+
+.brand-link:hover,
+.site-footer a:hover {
+    color: #ffd27a;
+}
+
+.brand-link:focus-visible,
+.site-footer a:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
+.header-copy {
+    min-width: 0;
+}
+
 .header h1 {
-    font-size: 1.25rem;
+    font-family: var(--font-heading);
+    font-size: 1.22rem;
     font-weight: 700;
     color: var(--text);
     letter-spacing: -0.01em;
@@ -119,7 +167,7 @@ body {
 
 .header-subtitle {
     font-size: 0.82rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     margin-top: 4px;
 }
 
@@ -133,6 +181,9 @@ body {
 
 .preset-select {
     min-width: 260px;
+    width: auto;
+    max-width: 100%;
+    flex: 0 1 300px;
 }
 
 /* Main content */
@@ -159,7 +210,7 @@ body {
     display: flex;
     flex-direction: column;
     padding: var(--sp-6);
-    background: var(--surface-2);
+    background: var(--bg-secondary);
 }
 
 /* ========================================
@@ -216,6 +267,7 @@ body {
 
 .form-row .form-group {
     flex: 1;
+    min-width: 0;
 }
 
 label {
@@ -241,7 +293,7 @@ textarea {
 
 input[type="text"]::placeholder,
 textarea::placeholder {
-    color: var(--text-muted);
+    color: var(--text-secondary);
     opacity: 1;
 }
 
@@ -267,6 +319,15 @@ input[type="number"] {
 
 select {
     cursor: pointer;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+select option,
+select optgroup {
+    background: var(--bg-secondary);
+    color: var(--text);
 }
 
 textarea {
@@ -304,7 +365,7 @@ textarea {
 }
 
 .checkbox-group:hover {
-    border-color: var(--text-muted);
+    border-color: var(--border-strong);
     background: var(--surface-2);
 }
 
@@ -312,7 +373,7 @@ textarea {
     width: 18px;
     height: 18px;
     margin-top: 1px;
-    accent-color: var(--accent);
+    accent-color: var(--accent-mint);
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -327,7 +388,7 @@ textarea {
 
 .checkbox-group label small {
     display: block;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     font-size: 0.78rem;
     font-weight: 400;
     margin-top: 2px;
@@ -398,22 +459,41 @@ textarea {
 
 .notebook-settings {
     margin: 0 0 12px;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--r-md);
-    background: var(--surface-2);
+    padding: 14px 16px;
+    border: 1px solid var(--tips-border);
+    border-left: 3px solid var(--accent-mint);
+    border-radius: var(--r-lg);
+    background: rgba(0, 212, 168, 0.055);
 }
 
 .notebook-settings h3 {
     margin: 0 0 6px;
     font-size: 0.9rem;
+    font-weight: 650;
+    color: var(--text);
+}
+
+.notebook-settings-hint {
+    margin: 0 0 8px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
 }
 
 .notebook-settings pre {
     margin: 0;
-    color: var(--text-secondary);
+    color: var(--text);
     font: inherit;
+    font-size: 0.86rem;
+    line-height: 1.7;
     white-space: pre-wrap;
+}
+
+.prompt-label {
+    display: block;
+    margin: 4px 0 8px;
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 650;
 }
 
 .output-header h2 {
@@ -425,13 +505,13 @@ textarea {
 
 .output-stats {
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     font-family: var(--font-mono);
 }
 
 #generatedPrompt {
     flex: 1;
-    background: var(--surface);
+    background: rgba(5, 9, 20, 0.62);
     border: 1px solid var(--border-control);
     border-radius: var(--r-md);
     padding: var(--sp-4);
@@ -453,7 +533,7 @@ textarea {
 .tips-section {
     margin-top: var(--sp-4);
     padding: var(--sp-3) var(--sp-4);
-    background: var(--accent-weak);
+    background: rgba(0, 212, 168, 0.055);
     border: 1px solid var(--tips-border);
     border-radius: var(--r-md);
 }
@@ -494,7 +574,7 @@ textarea {
     padding: 10px 16px;
     min-height: 40px;
     border: 1px solid var(--border-control);
-    border-radius: var(--r-sm);
+    border-radius: 999px;
     font-size: 0.88rem;
     font-weight: 500;
     cursor: pointer;
@@ -506,16 +586,16 @@ textarea {
 }
 
 .btn:hover {
-    border-color: var(--text-muted);
-    background: var(--surface-2);
-}
-
-.btn:active {
+    border-color: var(--border-strong);
     background: var(--surface-3);
 }
 
+.btn:active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
 .btn-primary {
-    background: var(--accent);
+    background: linear-gradient(135deg, #f8b83f, var(--accent));
     border-color: var(--accent);
     color: var(--on-accent);
 }
@@ -540,7 +620,7 @@ textarea {
    ACTION BAR
    ======================================== */
 .action-bar {
-    background: var(--surface);
+    background: var(--bg-secondary);
     border-top: 1px solid var(--border);
     padding: var(--sp-3) var(--sp-6);
     display: flex;
@@ -595,7 +675,7 @@ textarea {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15,23,42,0.45);
+    background: rgba(4, 8, 18, 0.78);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -648,7 +728,7 @@ textarea {
 .modal-close {
     background: none;
     border: none;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     font-size: 1.5rem;
     line-height: 1;
     cursor: pointer;
@@ -716,8 +796,8 @@ textarea {
     font-size: 0.7rem;
     font-weight: 600;
     padding: 2px 8px;
-    background: var(--accent-weak);
-    color: var(--accent);
+    background: rgba(0, 212, 168, 0.12);
+    color: var(--accent-mint);
     border-radius: 999px;
     margin-left: var(--sp-2);
     white-space: nowrap;
@@ -814,7 +894,7 @@ textarea:focus-visible,
 
 .step-nav-btn:hover {
     background: var(--surface-2);
-    border-color: var(--text-muted);
+    border-color: var(--border-strong);
 }
 
 .step-nav-btn[aria-current="step"] {
@@ -873,6 +953,7 @@ textarea:focus-visible,
 .mode-switch input[type="radio"]:checked + label {
     background: var(--accent);
     color: var(--on-accent);
+    font-weight: 650;
 }
 
 .mode-switch input[type="radio"]:focus-visible + label {
@@ -884,7 +965,7 @@ textarea:focus-visible,
     padding: var(--sp-2) var(--sp-6) 0;
     margin: 0;
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
 }
 
 /* Nadpis kroku: číselná značka + titulek */
@@ -920,7 +1001,7 @@ textarea:focus-visible,
     margin: 0;
     padding: var(--sp-2) var(--sp-4) 0;
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
 }
 
 /* Blok pokročilých polí uvnitř kroku */
@@ -945,7 +1026,7 @@ textarea:focus-visible,
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: var(--text-secondary);
 }
 
 /* Upozornění na aktivní pokročilá nastavení (neblokující, ne chyba) */
@@ -956,7 +1037,7 @@ textarea:focus-visible,
     gap: var(--sp-3);
     margin-bottom: var(--sp-4);
     padding: var(--sp-3) var(--sp-4);
-    background: var(--accent-weak);
+    background: rgba(0, 212, 168, 0.055);
     border: 1px solid var(--tips-border);
     border-radius: var(--r-md);
     font-size: 0.85rem;
@@ -969,6 +1050,35 @@ textarea:focus-visible,
 
 .adv-notice-text {
     flex: 1 1 auto;
+}
+
+/* Compact parent-site footer beneath the existing workflow actions. */
+.site-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: 12px var(--sp-6);
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+}
+
+.site-footer p {
+    margin: 0;
+}
+
+.site-footer a {
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.human-in-the-loop {
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    letter-spacing: 0.07em;
 }
 
 /* ========================================
@@ -1008,6 +1118,16 @@ textarea:focus-visible,
         padding-right: var(--sp-4);
     }
 
+    .header-branding {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: var(--sp-2);
+    }
+
+    .header h1 {
+        font-size: 1.12rem;
+    }
+
     .flow-toolbar {
         gap: var(--sp-2);
     }
@@ -1024,10 +1144,18 @@ textarea:focus-visible,
     .preset-select {
         min-width: 0;
         width: 100%;
+        flex-basis: 100%;
     }
 
     .action-bar {
         justify-content: flex-start;
+    }
+
+    .site-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        padding-left: var(--sp-4);
+        padding-right: var(--sp-4);
     }
 }
 
