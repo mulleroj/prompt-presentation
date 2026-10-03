@@ -623,7 +623,7 @@
             pendingScrollSpyTimer = window.setTimeout(clearPendingScrollSpyTarget, 2000);
         }
 
-        /** Keep step navigation in sync with the section most visible while scrolling. */
+        /** Keep step navigation in sync with the section under the viewport center. */
         function setupStepScrollSpy() {
             const sectionIds = ['step1', 'step2', 'step3'];
             const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
@@ -633,38 +633,53 @@
                 if (step) setCurrentStep(step.id);
             });
 
-            if (!('IntersectionObserver' in window) || sections.length !== sectionIds.length) return;
+            if (sections.length !== sectionIds.length) return;
 
-            const visibleHeights = new Map(sectionIds.map(id => [id, 0]));
-            const observer = new IntersectionObserver(entries => {
-                entries.forEach(entry => {
-                    visibleHeights.set(entry.target.id, entry.isIntersecting ? entry.intersectionRect.height : 0);
+            let updateScheduled = false;
+            const updateCurrentStepFromViewport = () => {
+                updateScheduled = false;
+                const anchorY = window.innerHeight * 0.5;
+                const positions = sections.map(section => {
+                    const rect = section.getBoundingClientRect();
+                    const inside = rect.top <= anchorY && anchorY <= rect.bottom;
+                    const distance = inside ? 0 : Math.min(
+                        Math.abs(anchorY - rect.top),
+                        Math.abs(anchorY - rect.bottom)
+                    );
+                    return { id: section.id, inside, distance };
                 });
 
-                const dominant = sectionIds
-                    .map(id => ({ id, height: visibleHeights.get(id) || 0 }))
-                    .sort((a, b) => b.height - a.height)[0];
                 const currentStep = document.querySelector('.step-nav-btn[aria-current="step"]')?.dataset.step;
-                const currentHeight = visibleHeights.get(currentStep) || 0;
-                const minimumVisibleHeight = window.innerHeight * 0.18;
-                const hysteresis = Math.max(56, window.innerHeight * 0.08);
+                let target = positions.find(position => position.inside);
 
-                if (!dominant || dominant.height < minimumVisibleHeight) return;
+                if (!target) {
+                    const nearestDistance = Math.min(...positions.map(position => position.distance));
+                    const nearest = positions.filter(position => position.distance === nearestDistance);
+                    target = nearest.find(position => position.id === currentStep) || nearest[0];
+                }
+
                 if (pendingScrollSpyTarget) {
-                    if (dominant.id !== pendingScrollSpyTarget || dominant.height < minimumVisibleHeight) return;
+                    if (target.id !== pendingScrollSpyTarget) return;
                     clearPendingScrollSpyTarget();
                 }
-                if (dominant.id === currentStep) return;
-                if (currentHeight === 0 || dominant.height >= currentHeight + hysteresis) {
-                    setCurrentStep(dominant.id);
-                }
-            }, {
-                root: null,
-                rootMargin: '-8% 0px -12% 0px',
-                threshold: [0, 0.1, 0.2, 0.35, 0.5, 0.65, 0.8, 1]
-            });
 
-            sections.forEach(section => observer.observe(section));
+                if (target.id !== currentStep) setCurrentStep(target.id);
+            };
+
+            const scheduleViewportUpdate = () => {
+                if (updateScheduled) return;
+                updateScheduled = true;
+                window.requestAnimationFrame(updateCurrentStepFromViewport);
+            };
+
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver(scheduleViewportUpdate);
+                sections.forEach(section => observer.observe(section));
+            }
+
+            window.addEventListener('scroll', scheduleViewportUpdate, { passive: true });
+            window.addEventListener('resize', scheduleViewportUpdate, { passive: true });
+            scheduleViewportUpdate();
 
             const releaseTargetOnUserInput = () => clearPendingScrollSpyTarget();
             window.addEventListener('wheel', releaseTargetOnUserInput, { passive: true });
