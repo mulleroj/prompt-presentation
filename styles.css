@@ -1418,3 +1418,19 @@ textarea:focus-visible,
 @media (max-width: 920px) {
     .style-browser { max-height: 360px; }
 }
+
+@media (min-width: 921px) {
+    body:has(#modeAdvanced:checked) .style-explorer {
+        grid-template-columns: minmax(340px, 1fr) minmax(360px, 1fr);
+    }
+
+    body:has(#modeAdvanced:checked) .style-browser {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    body:has(#modeAdvanced:checked) .style-preview {
+        grid-column: 2;
+        grid-row: 1;
+    }
+}

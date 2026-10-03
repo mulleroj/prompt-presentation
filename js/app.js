@@ -505,9 +505,11 @@
             const selectGroup = document.getElementById('illustrationSelectGroup');
             const browser = document.getElementById('styleBrowser');
             const cards = document.getElementById('recommendedStyles');
+            const recommendations = document.querySelector('.style-recommendations');
             const toggle = document.getElementById('styleMoreToggle');
-            if (selectGroup && browser && cards && toggle) {
+            if (selectGroup && browser && cards && recommendations && toggle) {
                 const expanded = toggle.getAttribute('aria-expanded') === 'true';
+                recommendations.hidden = advanced;
                 cards.hidden = advanced;
                 toggle.hidden = advanced;
                 browser.hidden = !(advanced || expanded);
