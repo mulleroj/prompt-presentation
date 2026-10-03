@@ -202,70 +202,90 @@
                 </div>
                 <p class="step-hint">Vizuální styl a instrukce k obrázkům.</p>
                 <div class="section-content">
-                    <div class="form-group">
-                        <label for="illustrationPreset">Styl ilustrací</label>
-                        <select id="illustrationPreset">
-                            <optgroup label="🖌️ Ilustrační &amp; Výtvarné">
-                                <option value="3d-cut-paper">3D Cut-Paper (vystřihovánky)</option>
-                                <option value="flat-vector">Flat Vector Minimal (plochý vektor)</option>
-                                <option value="watercolor">Watercolor Sketch (akvarel)</option>
-                                <option value="isometric">Isometric 3D (izometrie)</option>
-                                <option value="claymorphism">Claymorphism (modelína)</option>
-                                <option value="retro-poster">Retro Poster (retro plakát)</option>
-                                <option value="comic">Comic Panel (komiks)</option>
-                                <option value="storybook">Storybook (pohádková kniha)</option>
-                                <option value="collage">Collage (koláž)</option>
-                                <option value="noir">Noir Minimal (temný minimalizmus)</option>
-                                <option value="paper-collage">Paper Collage Illustrative (papírová koláž)</option>
-                                <option value="ink-line-art">Ink &amp; Line Art (perokresba)</option>
-                                <option value="pastel-chalkboard">Pastel Chalkboard (křídová kresba)</option>
-                                <option value="gouache">Gouache Illustration (gouache malba)</option>
-                                <option value="soft-gradient">Soft Gradient Illustration (jemné přechody)</option>
-                            </optgroup>
-                            <optgroup label="🧠 Konceptuální &amp; Expresivní">
-                                <option value="narrative-visual">Narrative / Visual Story (příběh v obrazech)</option>
-                                <option value="journey-roadmap">Journey / Roadmap (cesta, vývoj)</option>
-                                <option value="metaphor-driven">Metaphor-Driven (metafory – mosty, cesty)</option>
-                                <option value="explainer-style">Explainer Style (jak to funguje)</option>
-                                <option value="abstract-concept">Abstract Concept Art (abstraktní koncepty)</option>
-                                <option value="surreal-edu">Surreal Educational (surrealistické metafory)</option>
-                                <option value="symbolic-visual">Symbolic Visual Language (symbolický jazyk)</option>
-                                <option value="minimal-metaphor">Minimal Metaphor (jedna silná metafora)</option>
-                            </optgroup>
-                            <optgroup label="📚 Narativní &amp; Autorské">
-                                <option value="illustrated-narrative">Illustrated Narrative (kapitoly příběhu)</option>
-                                <option value="storyboard-frames">Storyboard Frames (filmové rámování)</option>
-                                <option value="visual-diary">Visual Diary / Sketchbook (zápisník)</option>
-                                <option value="journey-illustration">Journey Illustration (vizuální linka)</option>
-                            </optgroup>
-                            <optgroup label="🎭 Stylové / Atmosférické">
-                                <option value="dreamlike">Dreamlike Soft Focus (snový styl)</option>
-                                <option value="dark-academia">Dark Academia Visual (temný akademický)</option>
-                                <option value="nordic-light">Light Nordic Illustration (severský minimalismus)</option>
-                                <option value="boho-handcrafted">Boho Handcrafted (ruční organický)</option>
-                            </optgroup>
-                            <optgroup label="📖 Vzdělávací / Výkladové">
-                                <option value="infographic-clean">Infographic Clean (čistá infografika)</option>
-                                <option value="concept-map">Concept Map (myšlenkové mapy)</option>
-                                <option value="step-by-step">Step-by-Step Diagram (postupová schémata)</option>
-                                <option value="whiteboard">Whiteboard Illustration (tabule)</option>
-                                <option value="textbook-modern">Textbook Modern (moderní učebnice)</option>
-                                <option value="vintage-edu">Vintage Educational (klasická učebnice)</option>
-                            </optgroup>
-                            <optgroup label="👶 Pro děti / Školy">
-                                <option value="kids-flat">Kids Educational Flat (jednoduché tvary)</option>
-                                <option value="playful-classroom">Playful Classroom (školní prostředí)</option>
-                                <option value="mascot-based">Mascot-Based (postava-průvodce)</option>
-                            </optgroup>
-                            <optgroup label="💼 Profesionální / Technické">
-                                <option value="corporate-minimal">Corporate Minimal (firemní střízlivý)</option>
-                                <option value="research-academic">Research / Academic (vědecký)</option>
-                                <option value="legal-policy">Legal / Policy (formální dokumenty)</option>
-                                <option value="blueprint">Technical Blueprint (technický výkres)</option>
-                                <option value="engineering-diagram">Engineering Diagram (funkční nákres)</option>
-                                <option value="data-storytelling">Data Storytelling (data bez grafů)</option>
-                            </optgroup>
-                        </select>
+                    <div class="style-explorer" id="styleExplorer">
+                        <div class="style-picker-column">
+                            <div class="style-select-group" id="illustrationSelectGroup" hidden>
+                                <label for="illustrationPreset">Všechny styly</label>
+                                <select id="illustrationPreset">
+                                    <optgroup label="🖌️ Ilustrační &amp; Výtvarné">
+                                        <option value="3d-cut-paper">3D Cut-Paper (vystřihovánky)</option>
+                                        <option value="flat-vector">Flat Vector Minimal (plochý vektor)</option>
+                                        <option value="watercolor">Watercolor Sketch (akvarel)</option>
+                                        <option value="isometric">Isometric 3D (izometrie)</option>
+                                        <option value="claymorphism">Claymorphism (modelína)</option>
+                                        <option value="retro-poster">Retro Poster (retro plakát)</option>
+                                        <option value="comic">Comic Panel (komiks)</option>
+                                        <option value="storybook">Storybook (pohádková kniha)</option>
+                                        <option value="collage">Collage (koláž)</option>
+                                        <option value="noir">Noir Minimal (temný minimalizmus)</option>
+                                        <option value="paper-collage">Paper Collage Illustrative (papírová koláž)</option>
+                                        <option value="ink-line-art">Ink &amp; Line Art (perokresba)</option>
+                                        <option value="pastel-chalkboard">Pastel Chalkboard (křídová kresba)</option>
+                                        <option value="gouache">Gouache Illustration (gouache malba)</option>
+                                        <option value="soft-gradient">Soft Gradient Illustration (jemné přechody)</option>
+                                    </optgroup>
+                                    <optgroup label="🧠 Konceptuální &amp; Expresivní">
+                                        <option value="narrative-visual">Narrative / Visual Story (příběh v obrazech)</option>
+                                        <option value="journey-roadmap">Journey / Roadmap (cesta, vývoj)</option>
+                                        <option value="metaphor-driven">Metaphor-Driven (metafory – mosty, cesty)</option>
+                                        <option value="explainer-style">Explainer Style (jak to funguje)</option>
+                                        <option value="abstract-concept">Abstract Concept Art (abstraktní koncepty)</option>
+                                        <option value="surreal-edu">Surreal Educational (surrealistické metafory)</option>
+                                        <option value="symbolic-visual">Symbolic Visual Language (symbolický jazyk)</option>
+                                        <option value="minimal-metaphor">Minimal Metaphor (jedna silná metafora)</option>
+                                    </optgroup>
+                                    <optgroup label="📚 Narativní &amp; Autorské">
+                                        <option value="illustrated-narrative">Illustrated Narrative (kapitoly příběhu)</option>
+                                        <option value="storyboard-frames">Storyboard Frames (filmové rámování)</option>
+                                        <option value="visual-diary">Visual Diary / Sketchbook (zápisník)</option>
+                                        <option value="journey-illustration">Journey Illustration (vizuální linka)</option>
+                                    </optgroup>
+                                    <optgroup label="🎭 Stylové / Atmosférické">
+                                        <option value="dreamlike">Dreamlike Soft Focus (snový styl)</option>
+                                        <option value="dark-academia">Dark Academia Visual (temný akademický)</option>
+                                        <option value="nordic-light">Light Nordic Illustration (severský minimalismus)</option>
+                                        <option value="boho-handcrafted">Boho Handcrafted (ruční organický)</option>
+                                    </optgroup>
+                                    <optgroup label="📖 Vzdělávací / Výkladové">
+                                        <option value="infographic-clean">Infographic Clean (čistá infografika)</option>
+                                        <option value="concept-map">Concept Map (myšlenkové mapy)</option>
+                                        <option value="step-by-step">Step-by-Step Diagram (postupová schémata)</option>
+                                        <option value="whiteboard">Whiteboard Illustration (tabule)</option>
+                                        <option value="textbook-modern">Textbook Modern (moderní učebnice)</option>
+                                        <option value="vintage-edu">Vintage Educational (klasická učebnice)</option>
+                                    </optgroup>
+                                    <optgroup label="👶 Pro děti / Školy">
+                                        <option value="kids-flat">Kids Educational Flat (jednoduché tvary)</option>
+                                        <option value="playful-classroom">Playful Classroom (školní prostředí)</option>
+                                        <option value="mascot-based">Mascot-Based (postava-průvodce)</option>
+                                    </optgroup>
+                                    <optgroup label="💼 Profesionální / Technické">
+                                        <option value="corporate-minimal">Corporate Minimal (firemní střízlivý)</option>
+                                        <option value="research-academic">Research / Academic (vědecký)</option>
+                                        <option value="legal-policy">Legal / Policy (formální dokumenty)</option>
+                                        <option value="blueprint">Technical Blueprint (technický výkres)</option>
+                                        <option value="engineering-diagram">Engineering Diagram (funkční nákres)</option>
+                                        <option value="data-storytelling">Data Storytelling (data bez grafů)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <fieldset class="style-recommendations">
+                                <legend>Doporučené styly</legend>
+                                <div class="style-card-grid" id="recommendedStyles" role="radiogroup" aria-label="Doporučené styly ilustrací"></div>
+                                <p class="style-current-note" id="styleCurrentNote" hidden></p>
+                            </fieldset>
+                            <button class="style-more-toggle" id="styleMoreToggle" type="button" aria-expanded="false" aria-controls="illustrationSelectGroup">Zobrazit všech 46 stylů</button>
+                        </div>
+                        <aside class="style-preview" aria-labelledby="stylePreviewTitle" aria-live="polite">
+                            <h3 id="stylePreviewTitle">Náhled stylu</h3>
+                            <div class="style-preview-image" id="stylePreviewImage">
+                                <img id="stylePreviewImg" alt="" hidden>
+                                <div class="style-preview-fallback" id="stylePreviewFallback"><span class="style-preview-symbol" aria-hidden="true">▧</span><span>Náhled připravujeme</span></div>
+                            </div>
+                            <h4 id="stylePreviewName"></h4>
+                            <p id="stylePreviewDescription"></p>
+                            <p class="style-preview-en" id="stylePreviewEnglish"></p>
+                        </aside>
                     </div>
                     <div class="advanced-block" data-advanced hidden>
                         <p class="advanced-block-label">Pokročilá nastavení</p>
