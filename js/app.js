@@ -78,6 +78,17 @@
             'textbook-modern', 'infographic-clean', 'flat-vector', 'step-by-step',
             'narrative-visual', 'watercolor', 'engineering-diagram', 'research-academic'
         ];
+        // Short card-only helper copy; prompt snippets and preview metadata stay unchanged.
+        const STYLE_CARD_USE_HINTS = {
+            'textbook-modern': 'běžnou výuku a shrnutí',
+            'infographic-clean': 'fakta a přehledy',
+            'flat-vector': 'univerzální výklad',
+            'step-by-step': 'postupy a návody',
+            'narrative-visual': 'historii a příběhy',
+            'watercolor': 'jazyky a literaturu',
+            'engineering-diagram': 'techniku a principy',
+            'research-academic': 'odborná témata'
+        };
 
         // Atmosphere snippets (English for prompt)
         const ATMOSPHERE_SNIPPETS = {
@@ -680,7 +691,7 @@
                 title.textContent = meta.labelCs;
                 const description = document.createElement('span');
                 description.className = 'style-card-description';
-                description.textContent = 'Vhodné pro ' + meta.descriptionCs;
+                description.textContent = 'Vhodné pro ' + (STYLE_CARD_USE_HINTS[id] || meta.descriptionCs);
                 label.append(radio, thumb, title, description);
                 grid.appendChild(label);
                 radio.addEventListener('change', () => {

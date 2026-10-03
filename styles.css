@@ -553,7 +553,7 @@ textarea {
 .style-select-group[hidden] { display: none; }
 .style-preview { align-self: start; min-width: 0; padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--r-md); background: rgba(9,16,30,.58); }
 .style-preview h3 { margin: 0 0 var(--sp-3); color: var(--text); font-size: .9rem; }
-.style-preview-image { display: grid; aspect-ratio: 16 / 10; min-height: 0; place-items: center; overflow: hidden; border: 1px solid var(--border-control); border-radius: var(--r-sm); background: #0b1425; }
+.style-preview-image { display: grid; aspect-ratio: 16 / 10; max-height: 280px; min-height: 0; place-items: center; overflow: hidden; border: 1px solid var(--border-control); border-radius: var(--r-sm); background: #0b1425; }
 .style-preview-image img { width: 100%; height: 100%; object-fit: contain; }
 .style-preview-image img[hidden] { display: none; }
 .style-preview-fallback { display: flex; min-height: 100px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px; color: var(--text-secondary); font-size: .78rem; text-align: center; }
@@ -562,9 +562,67 @@ textarea {
 .style-preview p { margin: 0; color: var(--text-secondary); font-size: .8rem; line-height: 1.5; }
 .style-preview .style-preview-en { margin-top: 8px; color: var(--text-muted); font-size: .72rem; }
 
-@media (min-width: 1100px) {
-    .style-explorer { grid-template-columns: minmax(0, 1fr) minmax(270px, .95fr); align-items: start; }
-    .style-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* The appearance step can use the full form width while it is selected. */
+@media (min-width: 921px) {
+    body:has(.step-nav-btn[aria-current="step"][data-step="step3"]) .main-content,
+    body:has(#step3:focus) .main-content {
+        flex-direction: column;
+        overflow: visible;
+    }
+
+    body:has(.step-nav-btn[aria-current="step"][data-step="step3"]) .form-panel,
+    body:has(#step3:focus) .form-panel {
+        max-height: none;
+        overflow: visible;
+    }
+
+    body:has(.step-nav-btn[aria-current="step"][data-step="step3"]) #step3,
+    body:has(#step3:focus) #step3 {
+        width: calc(min(100vw, var(--content-max)) - 2 * var(--sp-6));
+        max-width: none;
+    }
+
+    .style-explorer { grid-template-columns: minmax(0, 1fr); align-items: start; }
+}
+
+@media (min-width: 1200px) {
+    .style-explorer { grid-template-columns: minmax(190px, .72fr) minmax(380px, 1.35fr) minmax(280px, .95fr); gap: var(--sp-4); }
+    .style-picker-column { display: contents; }
+    .style-select-group { grid-column: 1; grid-row: 1; }
+    .style-more-toggle { grid-column: 1; grid-row: 2; justify-self: start; align-self: start; }
+    .style-recommendations { grid-column: 2; grid-row: 1 / span 2; }
+    .style-card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .style-card { min-height: 0; padding: 7px; }
+    .style-card:has(input:checked) { padding: 6px; }
+    .style-card-title { font-size: .76rem; }
+    .style-card-description { font-size: .66rem; }
+    .style-preview { grid-column: 3; grid-row: 1 / span 2; }
+}
+
+@media (min-width: 921px) and (max-width: 1199px) {
+    .style-explorer { grid-template-columns: minmax(0, 1.35fr) minmax(270px, .8fr); }
+    .style-picker-column { grid-column: 1; }
+    .style-preview { grid-column: 2; grid-row: 1; }
+    .style-card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .style-card { min-height: 0; padding: 7px; }
+    .style-card:has(input:checked) { padding: 6px; }
+    .style-card-title { font-size: .76rem; }
+    .style-card-description { font-size: .66rem; }
+}
+
+@media (max-width: 920px) {
+    .style-explorer { grid-template-columns: minmax(0, 1fr); }
+    .style-picker-column,
+    .style-recommendations,
+    .style-preview { grid-column: 1; grid-row: auto; }
+}
+
+@media (min-width: 561px) and (max-width: 920px) {
+    .style-card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .style-card { min-height: 0; padding: 7px; }
+    .style-card:has(input:checked) { padding: 6px; }
+    .style-card-title { font-size: .76rem; }
+    .style-card-description { font-size: .66rem; }
 }
 
 #generatedPrompt:focus {
