@@ -89,17 +89,9 @@
 
         // Human-readable prompt instructions for internal enum keys, so the
         // generated prompt never leaks raw values like "default" or "beginner".
-        // Format labels describe ONLY the deck format; the speaker-notes rule is
-        // emitted separately and conditionally (see generatePrompt) so it never
-        // duplicates the format description or contradicts the checkbox.
-        const FORMAT_PROMPT_LABELS = {
-            'Presenter Deck': 'Presenter deck – concise slides that support a spoken presentation.',
-            'Detailed Deck': 'Detailed deck – slides carry the full explanation on their own.'
-        };
-        const LENGTH_PROMPT_LABELS = {
-            'short': 'Keep the deck concise – include only the most essential points.',
-            'default': 'Use a balanced length appropriate to the source material.',
-            'long': 'Create a more thorough deck with enough depth and explanation.'
+        const FORMAT_UI_LABELS = {
+            'Presenter Slides': 'Snímky pro prezentujícího',
+            'Detailed Deck': 'Podrobná prezentace'
         };
         const KNOWLEDGE_PROMPT_LABELS = {
             'beginner': 'beginners with little or no prior knowledge',
@@ -112,7 +104,7 @@
             '__preset_usecases': {
                 name: '10 případů použití – 3D Cut Paper',
                 data: {
-                    deckFormat: 'Presenter Deck',
+                    deckFormat: 'Presenter Slides',
                     deckLength: 'default',
                     outputLanguage: 'Czech',
                     customLanguage: '',
@@ -121,11 +113,8 @@
                     targetAudience: 'Manažeři a lidé s rozhodovací pravomocí',
                     knowledgeLevel: 'intermediate',
                     numSlides: 12,
-                    exactSlides: true,
                     oneIdea: true,
                     bulletsPerSlide: 3,
-                    speakerNotes: true,
-                    noInventedFacts: true,
                     noScreenshots: true,
                     illustrationPreset: '3d-cut-paper',
                     atmosphere: 'friendly',
@@ -140,7 +129,7 @@
             '__preset_lesson': {
                 name: 'Výuková prezentace – Studenti – Začátečníci',
                 data: {
-                    deckFormat: 'Presenter Deck',
+                    deckFormat: 'Presenter Slides',
                     deckLength: 'long',
                     outputLanguage: 'Czech',
                     customLanguage: '',
@@ -149,11 +138,8 @@
                     targetAudience: 'Studenti bez předchozích znalostí',
                     knowledgeLevel: 'beginner',
                     numSlides: 15,
-                    exactSlides: true,
                     oneIdea: true,
                     bulletsPerSlide: 4,
-                    speakerNotes: true,
-                    noInventedFacts: true,
                     noScreenshots: true,
                     illustrationPreset: 'storybook',
                     atmosphere: 'friendly',
@@ -177,11 +163,8 @@
                     targetAudience: 'Učitelé a pedagogové s určitými zkušenostmi',
                     knowledgeLevel: 'intermediate',
                     numSlides: 10,
-                    exactSlides: true,
                     oneIdea: true,
                     bulletsPerSlide: 4,
-                    speakerNotes: false,
-                    noInventedFacts: true,
                     noScreenshots: true,
                     illustrationPreset: 'flat-vector',
                     atmosphere: 'serious',
@@ -198,9 +181,9 @@
         // Form field IDs (constraintLevel is handled separately as radio buttons)
         const FORM_FIELDS = [
             'deckFormat', 'deckLength', 'outputLanguage', 'customLanguage',
-            'topic', 'primaryGoal', 'targetAudience', 'knowledgeLevel', 'numSlides',
-            'exactSlides', 'oneIdea', 'bulletsPerSlide', 'speakerNotes',
-            'noInventedFacts', 'noScreenshots',
+            'topic', 'primaryGoal', 'targetAudience', 'knowledgeLevel', 'numSlides', 'contentOutline',
+            'oneIdea', 'bulletsPerSlide',
+            'noScreenshots',
             'illustrationPreset', 'atmosphere', 'visualConsistency',
             'visualConstraints',
             'themePack', 'geminiNaming', 'additionalTerminology'
@@ -223,7 +206,7 @@
         // Allowlisted enum values. Style/atmosphere/theme lists are derived
         // from the snippet dictionaries so they cannot drift out of sync.
         const ENUMS = {
-            deckFormat: ['Presenter Deck', 'Detailed Deck'],
+            deckFormat: ['Presenter Slides', 'Detailed Deck'],
             deckLength: ['short', 'default', 'long'],
             outputLanguage: ['Czech', 'English', 'German', 'French', 'Spanish', 'custom'],
             knowledgeLevel: ['beginner', 'intermediate', 'advanced'],
@@ -235,7 +218,7 @@
 
         // Single source of truth for default values (also used by resetForm).
         const DEFAULT_STATE = {
-            deckFormat: 'Presenter Deck',
+            deckFormat: 'Presenter Slides',
             deckLength: 'default',
             outputLanguage: 'Czech',
             customLanguage: '',
@@ -244,11 +227,9 @@
             targetAudience: '',
             knowledgeLevel: 'intermediate',
             numSlides: 10,
-            exactSlides: true,
             oneIdea: true,
             bulletsPerSlide: 4,
-            speakerNotes: true,
-            noInventedFacts: true,
+            contentOutline: '',
             noScreenshots: true,
             illustrationPreset: '3d-cut-paper',
             atmosphere: 'friendly',
@@ -270,13 +251,11 @@
             topic: { type: 'string', max: LIMITS.shortText },
             primaryGoal: { type: 'string', max: LIMITS.shortText },
             targetAudience: { type: 'string', max: LIMITS.shortText },
+            contentOutline: { type: 'string', max: LIMITS.longText },
             knowledgeLevel: { type: 'enum', values: ENUMS.knowledgeLevel },
             numSlides: { type: 'number', min: 3, max: 60, integer: true },
-            exactSlides: { type: 'boolean' },
             oneIdea: { type: 'boolean' },
             bulletsPerSlide: { type: 'number', min: 2, max: 8, integer: true },
-            speakerNotes: { type: 'boolean' },
-            noInventedFacts: { type: 'boolean' },
             noScreenshots: { type: 'boolean' },
             illustrationPreset: { type: 'enum', values: ENUMS.illustrationPreset },
             atmosphere: { type: 'enum', values: ENUMS.atmosphere },
@@ -335,12 +314,14 @@
          */
         function normalizeState(raw, base) {
             const source = isPlainObject(raw) ? raw : {};
+            const migrated = Object.assign({}, source);
+            if (migrated.deckFormat === 'Presenter Deck') migrated.deckFormat = 'Presenter Slides';
             const result = {};
             Object.keys(FIELD_SCHEMA).forEach(key => {
                 const rule = FIELD_SCHEMA[key];
                 const def = base[key];
-                const hasOwn = Object.prototype.hasOwnProperty.call(source, key);
-                const val = hasOwn ? source[key] : undefined;
+                const hasOwn = Object.prototype.hasOwnProperty.call(migrated, key);
+                const val = hasOwn ? migrated[key] : undefined;
                 switch (rule.type) {
                     case 'string':
                         result[key] = normalizeString(val, rule.max, def);
@@ -393,7 +374,8 @@
             // Require at least one recognized field so that {} or unknown-only
             // data is not silently accepted as "all defaults". Only schema keys
             // are checked, so a __proto__-only payload counts as zero (rejected).
-            const recognized = Object.keys(FIELD_SCHEMA).filter(
+            const legacyKeys = ['speakerNotes', 'exactSlides'];
+            const recognized = Object.keys(FIELD_SCHEMA).concat(legacyKeys).filter(
                 key => Object.prototype.hasOwnProperty.call(parsed.data, key)
             );
             if (recognized.length === 0) return { ok: false, reason: 'empty' };
@@ -411,6 +393,7 @@
             loadState();
             updateCustomPresetsList();
             setupEventListeners();
+            setupM2C();
             generatePrompt();
         });
 
@@ -430,13 +413,6 @@
             // Radio buttons for constraint level
             document.querySelectorAll('input[name="constraintLevel"]').forEach(radio => {
                 radio.addEventListener('change', onFormChange);
-            });
-
-            // Deck format changes speaker notes default
-            document.getElementById('deckFormat').addEventListener('change', (e) => {
-                const speakerNotes = document.getElementById('speakerNotes');
-                speakerNotes.checked = (e.target.value === 'Presenter Deck');
-                onFormChange();
             });
 
             // Custom language visibility
@@ -459,6 +435,165 @@
         function onFormChange() {
             saveState();
             generatePrompt();
+        }
+
+        // ========================================
+        // M2C — VIEW MODE (SIMPLE / ADVANCED) & STEP NAVIGATION
+        // Pure UI layer over the existing form state. No change to
+        // FIELD_SCHEMA, DEFAULT_STATE, the prompt, storage or presets.
+        // ========================================
+
+        // Fields shown only in the Advanced view. The preferred slide count
+        // and content outline stay available in Simple alongside core inputs.
+        // constraintLevel is a radio group handled specially in comparison.
+        const ADVANCED_FIELDS = [
+            'oneIdea', 'bulletsPerSlide',
+            'atmosphere', 'themePack',
+            'noScreenshots', 'visualConsistency', 'visualConstraints',
+            'constraintLevel', 'geminiNaming', 'additionalTerminology'
+        ];
+
+        function reducedMotion() {
+            return window.matchMedia
+                && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+
+        /** Current view mode from the mode radiogroup ('simple' | 'advanced'). */
+        function getViewMode() {
+            const r = document.querySelector('input[name="viewMode"]:checked');
+            return r ? r.value : 'simple';
+        }
+
+        /** Show/hide advanced blocks with the real `hidden` attribute so their
+         *  fields leave the tab order and the accessibility tree in Simple. */
+        function applyModeVisibility(mode) {
+            const advanced = mode === 'advanced';
+            document.querySelectorAll('[data-advanced]').forEach(block => {
+                if (advanced) block.removeAttribute('hidden');
+                else block.setAttribute('hidden', '');
+            });
+        }
+
+        function updateModeHint(mode) {
+            const hint = document.getElementById('modeHint');
+            if (!hint) return;
+            hint.textContent = mode === 'advanced'
+                ? 'Všechna nastavení a přesné řízení výstupu.'
+                : 'Nejdůležitější volby pro běžnou prezentaci.';
+        }
+
+        function announceMode(mode) {
+            const el = document.getElementById('modeAnnounce');
+            if (!el) return;
+            el.textContent = mode === 'advanced'
+                ? 'Zobrazena všechna nastavení (Pokročilý režim).'
+                : 'Zobrazeny jen základní volby (Jednoduchý režim).';
+        }
+
+        /** True if a field currently holds a value other than its DEFAULT_STATE. */
+        function isAdvancedFieldActive(fieldId) {
+            if (fieldId === 'constraintLevel') {
+                const r = document.querySelector('input[name="constraintLevel"]:checked');
+                const val = r ? r.value : 'normal';
+                return val !== DEFAULT_STATE.constraintLevel;
+            }
+            const el = document.getElementById(fieldId);
+            if (!el) return false;
+            let cur;
+            if (el.type === 'checkbox') cur = el.checked;
+            else if (el.type === 'number') cur = parseInt(el.value, 10);
+            else cur = el.value;
+            return cur !== DEFAULT_STATE[fieldId];
+        }
+
+        function activeAdvancedFields() {
+            return ADVANCED_FIELDS.filter(isAdvancedFieldActive);
+        }
+
+        /** Compact, non-error notice in Simple mode when hidden advanced values
+         *  are non-default, so they never silently affect the prompt. */
+        function updateAdvNotice() {
+            const notice = document.getElementById('advNotice');
+            const text = document.getElementById('advNoticeText');
+            if (!notice || !text) return;
+            const count = activeAdvancedFields().length;
+            if (getViewMode() === 'simple' && count > 0) {
+                text.textContent = 'Pokročilá nastavení jsou aktivní (' + count + ').';
+                notice.removeAttribute('hidden');
+            } else {
+                notice.setAttribute('hidden', '');
+            }
+        }
+
+        /** Switch the view mode. When collapsing to Simple, first move focus out
+         *  of any advanced block that is about to be hidden. */
+        function setViewMode(mode, options) {
+            options = options || {};
+            if (mode === 'simple') {
+                const active = document.activeElement;
+                if (active && active.closest && active.closest('[data-advanced]')) {
+                    const modeRadio = document.getElementById('modeSimple');
+                    if (modeRadio) modeRadio.focus();
+                }
+            }
+            const radio = document.getElementById(mode === 'advanced' ? 'modeAdvanced' : 'modeSimple');
+            if (radio) radio.checked = true;
+            applyModeVisibility(mode);
+            updateModeHint(mode);
+            updateAdvNotice();
+            announceMode(mode);
+            if (mode === 'advanced' && options.focusField) {
+                focusAdvancedField(options.focusField);
+            }
+        }
+
+        function focusAdvancedField(fieldId) {
+            const targetId = fieldId === 'constraintLevel' ? 'constraintNormal' : fieldId;
+            const el = document.getElementById(targetId);
+            if (!el) return;
+            el.focus();
+            el.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
+        }
+
+        /** Mark a step as current in the step navigation. */
+        function setCurrentStep(stepId) {
+            document.querySelectorAll('.step-nav-btn').forEach(btn => {
+                if (btn.getAttribute('data-step') === stepId) {
+                    btn.setAttribute('aria-current', 'step');
+                } else {
+                    btn.removeAttribute('aria-current');
+                }
+            });
+        }
+
+        /** Navigate to a step: scroll into view + focus its heading region.
+         *  No reload, no validation gate, values are untouched. */
+        function goToStep(stepId) {
+            const section = document.getElementById(stepId);
+            if (!section) return;
+            setCurrentStep(stepId);
+            section.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+            section.focus({ preventScroll: true });
+        }
+
+        /** Wire up M2C controls. Called once from init after the DOM exists. */
+        function setupM2C() {
+            document.querySelectorAll('input[name="viewMode"]').forEach(radio => {
+                radio.addEventListener('change', () => setViewMode(getViewMode()));
+            });
+            const show = document.getElementById('advNoticeShow');
+            if (show) {
+                show.addEventListener('click', () => {
+                    const first = activeAdvancedFields()[0] || null;
+                    setViewMode('advanced', { focusField: first });
+                });
+            }
+            document.querySelectorAll('.step-nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => goToStep(btn.getAttribute('data-step')));
+            });
+            // Start in Simple: default checked in HTML; ensure DOM matches.
+            applyModeVisibility(getViewMode());
+            updateModeHint(getViewMode());
         }
 
         // ========================================
@@ -588,15 +723,9 @@
                 lines.push('');
             }
 
-            // 1) Role & main task (generator instruction, not user content).
-            //    The "do not invent" rule is handled once, conditionally, in the
-            //    Slide Structure section so it never duplicates or conflicts.
-            lines.push('You are creating a slide deck in NotebookLM Studio from the provided notebook sources.');
-            lines.push('Apply the configuration below.');
-            lines.push('');
-
-            // 2) Topic & goal – values supplied by the user (clearly marked).
-            section('Presentation Topic', [
+            // 1) Content goal and audience. Gemini Notebook already receives
+            // format, length and language through its own controls.
+            section('Presentation Goal', [
                 state.topic ? `- Topic (provided by the user): ${state.topic}` : '',
                 state.primaryGoal ? `- Primary goal (provided by the user): ${state.primaryGoal}` : ''
             ]);
@@ -608,28 +737,16 @@
                 THEME_PACK_SNIPPETS[state.themePack] ? `- Content framing: ${THEME_PACK_SNIPPETS[state.themePack]}` : ''
             ]);
 
-            // 4) Language & length (mapped to natural instructions, no raw enums).
-            //    For a custom language use the trimmed value; if it is empty,
-            //    omit the language line entirely (never leak the internal
-            //    "custom" key) and let the language follow the source content.
-            const language = state.outputLanguage === 'custom'
-                ? (state.customLanguage || '').trim()
-                : state.outputLanguage;
-            section('Language & Length', [
-                language ? `- Output language: ${language}.` : '',
-                `- Format: ${FORMAT_PROMPT_LABELS[state.deckFormat] || state.deckFormat}`,
-                `- Length: ${LENGTH_PROMPT_LABELS[state.deckLength] || state.deckLength}`
-            ]);
+            // Optional outline: preserve each non-empty user line as a list item.
+            section('Content Outline', (state.contentOutline || '').split(/\r?\n/)
+                .map(line => line.trim()).filter(Boolean).map(line => `- ${line}`));
 
-            // 5) Slide structure.
+            // 4) Slide structure.
             section('Slide Structure', [
-                state.exactSlides
-                    ? `- Produce exactly ${state.numSlides} slides (no more, no less).`
-                    : `- Aim for approximately ${state.numSlides} slides.`,
+                `- Aim for about ${state.numSlides} slides.`,
                 state.oneIdea ? '- One main idea per slide.' : '',
                 `- At most ${state.bulletsPerSlide} bullet points per slide.`,
-                state.speakerNotes ? '- Include detailed speaker notes for each slide.' : '',
-                state.noInventedFacts ? '- Use only facts grounded in the provided sources; do not invent information.' : ''
+                '- Use only facts grounded in the provided sources; do not invent information.'
             ]);
 
             // 6) Visual style.
@@ -680,6 +797,19 @@
             const promptText = lines.join('\n');
             document.getElementById('generatedPrompt').value = promptText;
             document.getElementById('outputStats').textContent = `${promptText.length} znaků`;
+            const language = state.outputLanguage === 'custom' ? (state.customLanguage || '').trim() : state.outputLanguage;
+            const languageLabels = { Czech: 'Čeština', English: 'Angličtina', German: 'Němčina', French: 'Francouzština', Spanish: 'Španělština' };
+            document.getElementById('notebookSettings').textContent = [
+                `Formát: ${FORMAT_UI_LABELS[state.deckFormat] || FORMAT_UI_LABELS['Presenter Slides']}`,
+                `Délka: ${{ short: 'Krátká', default: 'Výchozí', long: 'Dlouhá' }[state.deckLength]}`,
+                `Jazyk: ${languageLabels[language] || language || 'Čeština'}`
+            ].join('\n');
+
+            // Keep the "advanced settings active" notice in sync with the
+            // current values (covers typing, reset, preset load and import,
+            // which all funnel through generatePrompt). UI-only; never affects
+            // the prompt above.
+            updateAdvNotice();
         }
 
         // ========================================
@@ -947,7 +1077,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `notebooklm-preset-${Date.now()}.json`;
+            a.download = `gemini-notebook-preset-${Date.now()}.json`;
             a.click();
             URL.revokeObjectURL(url);
         }

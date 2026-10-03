@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NotebookLM – Generátor promptů pro prezentace</title>
+    <title>Gemini Notebook – Generátor promptů pro prezentace</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -13,8 +13,8 @@
              ======================================== -->
         <header class="header">
             <div>
-                <h1>NotebookLM – Generátor promptů pro prezentace</h1>
-                <p class="header-subtitle">Generujte optimalizované prompty pro NotebookLM Studio → modul Slide Deck</p>
+                <h1>Gemini Notebook – Generátor promptů pro prezentace</h1>
+                <p class="header-subtitle">Připravte obsahový prompt a nastavení prezentace pro Gemini Notebook.</p>
             </div>
             <div class="preset-controls">
                 <select id="presetSelect" class="preset-select" aria-label="Vyberte uložený preset">
@@ -33,321 +33,294 @@
         <!-- ========================================
              MAIN CONTENT
              ======================================== -->
+        <!-- ========================================
+             KROKY + REŽIM
+             ======================================== -->
+        <div class="flow-toolbar">
+            <nav class="step-nav" aria-label="Kroky vytvoření promptu">
+                <ol class="step-nav-list">
+                    <li><button type="button" class="step-nav-btn" data-step="step1" aria-current="step"><span class="step-nav-num" aria-hidden="true">1</span><span class="step-nav-label">Obsah</span></button></li>
+                    <li><button type="button" class="step-nav-btn" data-step="step2"><span class="step-nav-num" aria-hidden="true">2</span><span class="step-nav-label">Publikum a účel</span></button></li>
+                    <li><button type="button" class="step-nav-btn" data-step="step3"><span class="step-nav-num" aria-hidden="true">3</span><span class="step-nav-label">Vzhled</span></button></li>
+                    <li><button type="button" class="step-nav-btn" data-step="step4"><span class="step-nav-num" aria-hidden="true">4</span><span class="step-nav-label">Výsledek</span></button></li>
+                </ol>
+            </nav>
+            <div class="mode-switch" role="radiogroup" aria-label="Režim zobrazení nastavení">
+                <input type="radio" name="viewMode" id="modeSimple" value="simple" checked>
+                <label for="modeSimple">Jednoduchý</label>
+                <input type="radio" name="viewMode" id="modeAdvanced" value="advanced">
+                <label for="modeAdvanced">Pokročilý</label>
+            </div>
+        </div>
+        <p class="mode-hint" id="modeHint">Nejdůležitější volby pro běžnou prezentaci.</p>
+
         <main class="main-content">
-            <!-- Left Panel: Form -->
+            <!-- Left column: steps 1–3 -->
             <div class="form-panel">
+                <div class="adv-notice" id="advNotice" role="status" hidden>
+                    <span class="adv-notice-text" id="advNoticeText"></span>
+                    <button type="button" class="btn btn-small" id="advNoticeShow">Zobrazit pokročilá nastavení</button>
+                </div>
                 <form id="promptForm">
 
-                    <!-- SECTION 1: Output Configuration -->
-                    <section class="form-section">
-                        <div class="section-header">
-                            <span>📤</span> Nastavení výstupu
+            <section class="form-section step" id="step1" tabindex="-1" aria-labelledby="step1Title">
+                <div class="section-header">
+                    <span class="step-badge" aria-hidden="true">1</span>
+                    <h2 class="step-title" id="step1Title">Obsah</h2>
+                </div>
+                <p class="step-hint">Co se generuje, formát, jazyk a délka.</p>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label for="topic">Téma / Název</label>
+                        <input type="text" id="topic" placeholder="např. Úvod do strojového učení">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="deckFormat">Formát prezentace</label>
+                            <select id="deckFormat">
+                                <option value="Presenter Slides">Snímky pro prezentujícího</option>
+                                <option value="Detailed Deck">Detailed Deck (podrobná prezentace s vysvětlením na slidech)</option>
+                            </select>
                         </div>
-                        <div class="section-content">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="deckFormat">Formát prezentace</label>
-                                    <select id="deckFormat">
-                                        <option value="Presenter Deck">Presenter Deck (s poznámkami)</option>
-                                        <option value="Detailed Deck">Detailed Deck (podrobný)</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="deckLength">Délka prezentace</label>
-                                    <select id="deckLength">
-                                        <option value="short">Krátká</option>
-                                        <option value="default" selected>Standardní</option>
-                                        <option value="long">Dlouhá</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="outputLanguage">Jazyk výstupu</label>
-                                <select id="outputLanguage">
-                                    <option value="Czech" selected>Čeština</option>
-                                    <option value="English">Angličtina</option>
-                                    <option value="German">Němčina</option>
-                                    <option value="French">Francouzština</option>
-                                    <option value="Spanish">Španělština</option>
-                                    <option value="custom">Vlastní...</option>
-                                </select>
-                                <div class="custom-language-wrapper" id="customLanguageWrapper">
-                                    <input type="text" id="customLanguage" placeholder="Zadejte vlastní jazyk...">
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <label for="deckLength">Délka prezentace</label>
+                            <select id="deckLength">
+                                <option value="short">Krátká</option>
+                                <option value="default" selected>Standardní</option>
+                                <option value="long">Dlouhá</option>
+                            </select>
                         </div>
-                    </section>
+                    </div>
+                    <div class="form-group">
+                        <label for="outputLanguage">Jazyk výstupu</label>
+                        <select id="outputLanguage">
+                            <option value="Czech" selected>Čeština</option>
+                            <option value="English">Angličtina</option>
+                            <option value="German">Němčina</option>
+                            <option value="French">Francouzština</option>
+                            <option value="Spanish">Španělština</option>
+                            <option value="custom">Vlastní...</option>
+                        </select>
+                        <div class="custom-language-wrapper" id="customLanguageWrapper">
+                            <input type="text" id="customLanguage" placeholder="Zadejte vlastní jazyk...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="numSlides">Preferovaný počet slidů</label>
+                        <input type="number" id="numSlides" value="10" min="3" max="60">
+                    </div>
+                    <div class="form-group">
+                        <label for="contentOutline">Osnova / Co musí prezentace obsahovat</label>
+                        <textarea id="contentOutline" maxlength="20000" placeholder="Úvod a motivace&#10;Klíčové pojmy&#10;Příklad&#10;Shrnutí"></textarea>
+                    </div>
+                    <div class="advanced-block" data-advanced hidden>
+                        <p class="advanced-block-label">Pokročilá nastavení</p>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="oneIdea" checked>
+                            <label for="oneIdea">
+                                Jedna myšlenka na slide
+                                <small>Každý slide se zaměří na jeden koncept</small>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="bulletsPerSlide">Počet odrážek na slide</label>
+                            <input type="number" id="bulletsPerSlide" value="4" min="2" max="8">
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                    <!-- SECTION 2: Core Content -->
-                    <section class="form-section">
-                        <div class="section-header">
-                            <span>📝</span> Hlavní obsah
+            <section class="form-section step" id="step2" tabindex="-1" aria-labelledby="step2Title">
+                <div class="section-header">
+                    <span class="step-badge" aria-hidden="true">2</span>
+                    <h2 class="step-title" id="step2Title">Publikum a účel</h2>
+                </div>
+                <p class="step-hint">Pro koho a proč prezentace je.</p>
+                <div class="section-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="targetAudience">Cílová skupina</label>
+                            <input type="text" id="targetAudience" placeholder="např. Studenti vysokých škol">
                         </div>
-                        <div class="section-content">
-                            <div class="form-group">
-                                <label for="topic">Téma / Název</label>
-                                <input type="text" id="topic" placeholder="např. Úvod do strojového učení">
-                            </div>
-                            <div class="form-group">
-                                <label for="primaryGoal">Hlavní cíl prezentace</label>
-                                <input type="text" id="primaryGoal" placeholder="např. Vysvětlit základní koncepty ML začátečníkům">
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="targetAudience">Cílová skupina</label>
-                                    <input type="text" id="targetAudience" placeholder="např. Studenti vysokých škol">
-                                </div>
-                                <div class="form-group">
-                                    <label for="knowledgeLevel">Úroveň znalostí</label>
-                                    <select id="knowledgeLevel">
-                                        <option value="beginner">Začátečník</option>
-                                        <option value="intermediate" selected>Středně pokročilý</option>
-                                        <option value="advanced">Pokročilý</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="numSlides">Počet slidů</label>
-                                <input type="number" id="numSlides" value="10" min="3" max="60">
-                            </div>
+                        <div class="form-group">
+                            <label for="knowledgeLevel">Úroveň znalostí</label>
+                            <select id="knowledgeLevel">
+                                <option value="beginner">Začátečník</option>
+                                <option value="intermediate" selected>Středně pokročilý</option>
+                                <option value="advanced">Pokročilý</option>
+                            </select>
                         </div>
-                    </section>
+                    </div>
+                    <div class="form-group">
+                        <label for="primaryGoal">Hlavní cíl prezentace</label>
+                        <input type="text" id="primaryGoal" placeholder="např. Vysvětlit základní koncepty ML začátečníkům">
+                    </div>
+                    <div class="advanced-block" data-advanced hidden>
+                        <p class="advanced-block-label">Pokročilá nastavení</p>
+                        <div class="form-group">
+                            <label for="atmosphere">Atmosféra</label>
+                            <select id="atmosphere">
+                                <option value="friendly">Přátelská a povzbudivá</option>
+                                <option value="serious">Seriózní a profesionální</option>
+                                <option value="academic">Akademická a důkladná</option>
+                                <option value="playful">Hravá a vtipná</option>
+                                <option value="inspirational">Inspirativní a povznášející</option>
+                                <option value="calm">Klidná a minimalistická</option>
+                                <option value="dramatic">Dramatická a filmová</option>
+                                <option value="futuristic">Futuristická a elegantní</option>
+                                <option value="historical">Historická a archivní</option>
+                                <option value="cozy">Útulná a pohádková</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="themePack">Tematický balíček</label>
+                            <select id="themePack">
+                                <option value="education">Vzdělávání</option>
+                                <option value="business">Business</option>
+                                <option value="technology">Technologie</option>
+                                <option value="history">Historie / Humanitní vědy</option>
+                                <option value="kids">Děti / Mládež</option>
+                                <option value="creative">Kreativní / Vyprávění příběhů</option>
+                                <option value="legal">Právní / Politika</option>
+                                <option value="science">Věda / Výzkum</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                    <!-- SECTION 3: Slide Rules -->
-                    <section class="form-section">
-                        <div class="section-header">
-                            <span>📋</span> Pravidla pro slidy
+            <section class="form-section step" id="step3" tabindex="-1" aria-labelledby="step3Title">
+                <div class="section-header">
+                    <span class="step-badge" aria-hidden="true">3</span>
+                    <h2 class="step-title" id="step3Title">Vzhled</h2>
+                </div>
+                <p class="step-hint">Vizuální styl a instrukce k obrázkům.</p>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label for="illustrationPreset">Styl ilustrací</label>
+                        <select id="illustrationPreset">
+                            <optgroup label="🖌️ Ilustrační &amp; Výtvarné">
+                                <option value="3d-cut-paper">3D Cut-Paper (vystřihovánky)</option>
+                                <option value="flat-vector">Flat Vector Minimal (plochý vektor)</option>
+                                <option value="watercolor">Watercolor Sketch (akvarel)</option>
+                                <option value="isometric">Isometric 3D (izometrie)</option>
+                                <option value="claymorphism">Claymorphism (modelína)</option>
+                                <option value="retro-poster">Retro Poster (retro plakát)</option>
+                                <option value="comic">Comic Panel (komiks)</option>
+                                <option value="storybook">Storybook (pohádková kniha)</option>
+                                <option value="collage">Collage (koláž)</option>
+                                <option value="noir">Noir Minimal (temný minimalizmus)</option>
+                                <option value="paper-collage">Paper Collage Illustrative (papírová koláž)</option>
+                                <option value="ink-line-art">Ink &amp; Line Art (perokresba)</option>
+                                <option value="pastel-chalkboard">Pastel Chalkboard (křídová kresba)</option>
+                                <option value="gouache">Gouache Illustration (gouache malba)</option>
+                                <option value="soft-gradient">Soft Gradient Illustration (jemné přechody)</option>
+                            </optgroup>
+                            <optgroup label="🧠 Konceptuální &amp; Expresivní">
+                                <option value="narrative-visual">Narrative / Visual Story (příběh v obrazech)</option>
+                                <option value="journey-roadmap">Journey / Roadmap (cesta, vývoj)</option>
+                                <option value="metaphor-driven">Metaphor-Driven (metafory – mosty, cesty)</option>
+                                <option value="explainer-style">Explainer Style (jak to funguje)</option>
+                                <option value="abstract-concept">Abstract Concept Art (abstraktní koncepty)</option>
+                                <option value="surreal-edu">Surreal Educational (surrealistické metafory)</option>
+                                <option value="symbolic-visual">Symbolic Visual Language (symbolický jazyk)</option>
+                                <option value="minimal-metaphor">Minimal Metaphor (jedna silná metafora)</option>
+                            </optgroup>
+                            <optgroup label="📚 Narativní &amp; Autorské">
+                                <option value="illustrated-narrative">Illustrated Narrative (kapitoly příběhu)</option>
+                                <option value="storyboard-frames">Storyboard Frames (filmové rámování)</option>
+                                <option value="visual-diary">Visual Diary / Sketchbook (zápisník)</option>
+                                <option value="journey-illustration">Journey Illustration (vizuální linka)</option>
+                            </optgroup>
+                            <optgroup label="🎭 Stylové / Atmosférické">
+                                <option value="dreamlike">Dreamlike Soft Focus (snový styl)</option>
+                                <option value="dark-academia">Dark Academia Visual (temný akademický)</option>
+                                <option value="nordic-light">Light Nordic Illustration (severský minimalismus)</option>
+                                <option value="boho-handcrafted">Boho Handcrafted (ruční organický)</option>
+                            </optgroup>
+                            <optgroup label="📖 Vzdělávací / Výkladové">
+                                <option value="infographic-clean">Infographic Clean (čistá infografika)</option>
+                                <option value="concept-map">Concept Map (myšlenkové mapy)</option>
+                                <option value="step-by-step">Step-by-Step Diagram (postupová schémata)</option>
+                                <option value="whiteboard">Whiteboard Illustration (tabule)</option>
+                                <option value="textbook-modern">Textbook Modern (moderní učebnice)</option>
+                                <option value="vintage-edu">Vintage Educational (klasická učebnice)</option>
+                            </optgroup>
+                            <optgroup label="👶 Pro děti / Školy">
+                                <option value="kids-flat">Kids Educational Flat (jednoduché tvary)</option>
+                                <option value="playful-classroom">Playful Classroom (školní prostředí)</option>
+                                <option value="mascot-based">Mascot-Based (postava-průvodce)</option>
+                            </optgroup>
+                            <optgroup label="💼 Profesionální / Technické">
+                                <option value="corporate-minimal">Corporate Minimal (firemní střízlivý)</option>
+                                <option value="research-academic">Research / Academic (vědecký)</option>
+                                <option value="legal-policy">Legal / Policy (formální dokumenty)</option>
+                                <option value="blueprint">Technical Blueprint (technický výkres)</option>
+                                <option value="engineering-diagram">Engineering Diagram (funkční nákres)</option>
+                                <option value="data-storytelling">Data Storytelling (data bez grafů)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="advanced-block" data-advanced hidden>
+                        <p class="advanced-block-label">Pokročilá nastavení</p>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="noScreenshots" checked>
+                            <label for="noScreenshots">
+                                Žádné screenshoty / UI prvky
+                                <small>Vyhnout se screenshotům a mockupům</small>
+                            </label>
                         </div>
-                        <div class="section-content">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="exactSlides" checked>
-                                <label for="exactSlides">
-                                    Generovat přesně N slidů
-                                    <small>Striktně dodržet zadaný počet slidů</small>
-                                </label>
-                            </div>
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="oneIdea" checked>
-                                <label for="oneIdea">
-                                    Jedna myšlenka na slide
-                                    <small>Každý slide se zaměří na jeden koncept</small>
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="bulletsPerSlide">Počet odrážek na slide</label>
-                                <input type="number" id="bulletsPerSlide" value="4" min="2" max="8">
-                            </div>
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="speakerNotes" checked>
-                                <label for="speakerNotes">
-                                    Zahrnout poznámky pro přednášejícího
-                                    <small>Přidat poznámky ke každému slidu</small>
-                                </label>
-                            </div>
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="noInventedFacts" checked>
-                                <label for="noInventedFacts">
-                                    Žádné vymyšlené fakty – pouze ze zdrojů
-                                    <small>Používat pouze informace z notebooku</small>
-                                </label>
-                            </div>
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="noScreenshots" checked>
-                                <label for="noScreenshots">
-                                    Žádné screenshoty / UI prvky
-                                    <small>Vyhnout se screenshotům a mockupům</small>
-                                </label>
-                            </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="visualConsistency" checked>
+                            <label for="visualConsistency">
+                                Uzamknout vizuální konzistenci
+                                <small>Zachovat stejný styl a atmosféru na všech slidech</small>
+                            </label>
                         </div>
-                    </section>
-
-                    <!-- SECTION 4: Visual Style -->
-                    <section class="form-section">
-                        <div class="section-header">
-                            <span>🎨</span> Vizuální styl – Preset ilustrací
+                        <div class="form-group">
+                            <label for="visualConstraints">Vizuální omezení</label>
+                            <textarea id="visualConstraints">No screenshots, no photos, no icons. One illustration per slide.</textarea>
                         </div>
-                        <div class="section-content">
-                            <div class="form-group">
-                                <label for="illustrationPreset">Styl ilustrací</label>
-                                <select id="illustrationPreset">
-                                    <optgroup label="🖌️ Ilustrační &amp; Výtvarné">
-                                        <option value="3d-cut-paper">3D Cut-Paper (vystřihovánky)</option>
-                                        <option value="flat-vector">Flat Vector Minimal (plochý vektor)</option>
-                                        <option value="watercolor">Watercolor Sketch (akvarel)</option>
-                                        <option value="isometric">Isometric 3D (izometrie)</option>
-                                        <option value="claymorphism">Claymorphism (modelína)</option>
-                                        <option value="retro-poster">Retro Poster (retro plakát)</option>
-                                        <option value="comic">Comic Panel (komiks)</option>
-                                        <option value="storybook">Storybook (pohádková kniha)</option>
-                                        <option value="collage">Collage (koláž)</option>
-                                        <option value="noir">Noir Minimal (temný minimalizmus)</option>
-                                        <option value="paper-collage">Paper Collage Illustrative (papírová koláž)</option>
-                                        <option value="ink-line-art">Ink &amp; Line Art (perokresba)</option>
-                                        <option value="pastel-chalkboard">Pastel Chalkboard (křídová kresba)</option>
-                                        <option value="gouache">Gouache Illustration (gouache malba)</option>
-                                        <option value="soft-gradient">Soft Gradient Illustration (jemné přechody)</option>
-                                    </optgroup>
-                                    <optgroup label="🧠 Konceptuální &amp; Expresivní">
-                                        <option value="narrative-visual">Narrative / Visual Story (příběh v obrazech)</option>
-                                        <option value="journey-roadmap">Journey / Roadmap (cesta, vývoj)</option>
-                                        <option value="metaphor-driven">Metaphor-Driven (metafory – mosty, cesty)</option>
-                                        <option value="explainer-style">Explainer Style (jak to funguje)</option>
-                                        <option value="abstract-concept">Abstract Concept Art (abstraktní koncepty)</option>
-                                        <option value="surreal-edu">Surreal Educational (surrealistické metafory)</option>
-                                        <option value="symbolic-visual">Symbolic Visual Language (symbolický jazyk)</option>
-                                        <option value="minimal-metaphor">Minimal Metaphor (jedna silná metafora)</option>
-                                    </optgroup>
-                                    <optgroup label="📚 Narativní &amp; Autorské">
-                                        <option value="illustrated-narrative">Illustrated Narrative (kapitoly příběhu)</option>
-                                        <option value="storyboard-frames">Storyboard Frames (filmové rámování)</option>
-                                        <option value="visual-diary">Visual Diary / Sketchbook (zápisník)</option>
-                                        <option value="journey-illustration">Journey Illustration (vizuální linka)</option>
-                                    </optgroup>
-                                    <optgroup label="🎭 Stylové / Atmosférické">
-                                        <option value="dreamlike">Dreamlike Soft Focus (snový styl)</option>
-                                        <option value="dark-academia">Dark Academia Visual (temný akademický)</option>
-                                        <option value="nordic-light">Light Nordic Illustration (severský minimalismus)</option>
-                                        <option value="boho-handcrafted">Boho Handcrafted (ruční organický)</option>
-                                    </optgroup>
-                                    <optgroup label="📖 Vzdělávací / Výkladové">
-                                        <option value="infographic-clean">Infographic Clean (čistá infografika)</option>
-                                        <option value="concept-map">Concept Map (myšlenkové mapy)</option>
-                                        <option value="step-by-step">Step-by-Step Diagram (postupová schémata)</option>
-                                        <option value="whiteboard">Whiteboard Illustration (tabule)</option>
-                                        <option value="textbook-modern">Textbook Modern (moderní učebnice)</option>
-                                        <option value="vintage-edu">Vintage Educational (klasická učebnice)</option>
-                                    </optgroup>
-                                    <optgroup label="👶 Pro děti / Školy">
-                                        <option value="kids-flat">Kids Educational Flat (jednoduché tvary)</option>
-                                        <option value="playful-classroom">Playful Classroom (školní prostředí)</option>
-                                        <option value="mascot-based">Mascot-Based (postava-průvodce)</option>
-                                    </optgroup>
-                                    <optgroup label="💼 Profesionální / Technické">
-                                        <option value="corporate-minimal">Corporate Minimal (firemní střízlivý)</option>
-                                        <option value="research-academic">Research / Academic (vědecký)</option>
-                                        <option value="legal-policy">Legal / Policy (formální dokumenty)</option>
-                                        <option value="blueprint">Technical Blueprint (technický výkres)</option>
-                                        <option value="engineering-diagram">Engineering Diagram (funkční nákres)</option>
-                                        <option value="data-storytelling">Data Storytelling (data bez grafů)</option>
-                                    </optgroup>
-                                </select>
+                        <div class="form-group">
+                            <label id="constraintLevelLabel">Úroveň omezení</label>
+                            <div class="toggle-group" role="radiogroup" aria-labelledby="constraintLevelLabel">
+                                <input type="radio" name="constraintLevel" id="constraintNormal" value="normal" checked>
+                                <label for="constraintNormal">Normální</label>
+                                <input type="radio" name="constraintLevel" id="constraintStrict" value="strict">
+                                <label for="constraintStrict">Přísná</label>
                             </div>
                         </div>
-                    </section>
-
-                    <!-- SECTION 5: Atmosphere -->
-                    <section class="form-section">
-                        <div class="section-header">
-                            <span>🌈</span> Atmosféra / Tón
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="geminiNaming" checked>
+                            <label for="geminiNaming">
+                                Používat pouze název „Gemini"
+                                <small>Bez čísel modelů (1.5, 2.0, atd.)</small>
+                            </label>
                         </div>
-                        <div class="section-content">
-                            <div class="form-group">
-                                <label for="atmosphere">Atmosféra</label>
-                                <select id="atmosphere">
-                                    <option value="friendly">Přátelská a povzbudivá</option>
-                                    <option value="serious">Seriózní a profesionální</option>
-                                    <option value="academic">Akademická a důkladná</option>
-                                    <option value="playful">Hravá a vtipná</option>
-                                    <option value="inspirational">Inspirativní a povznášející</option>
-                                    <option value="calm">Klidná a minimalistická</option>
-                                    <option value="dramatic">Dramatická a filmová</option>
-                                    <option value="futuristic">Futuristická a elegantní</option>
-                                    <option value="historical">Historická a archivní</option>
-                                    <option value="cozy">Útulná a pohádková</option>
-                                </select>
-                            </div>
+                        <div class="form-group">
+                            <label for="additionalTerminology">Další pravidla terminologie</label>
+                            <textarea id="additionalTerminology" placeholder="např. Používat 'AI asistent' místo 'chatbot'..."></textarea>
                         </div>
-                    </section>
-
-                    <!-- SECTION 6: Visual Consistency -->
-                    <section class="form-section">
-                        <div class="section-header">
-                            <span>🔒</span> Vizuální konzistence
-                        </div>
-                        <div class="section-content">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="visualConsistency" checked>
-                                <label for="visualConsistency">
-                                    Uzamknout vizuální konzistenci
-                                    <small>Zachovat stejný styl a atmosféru na všech slidech</small>
-                                </label>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- SECTION 7: Visual Constraints -->
-                    <section class="form-section">
-                        <div class="section-header">
-                            <span>🚫</span> Vizuální omezení
-                        </div>
-                        <div class="section-content">
-                            <div class="form-group">
-                                <label for="visualConstraints">Vizuální omezení</label>
-                                <textarea id="visualConstraints">No screenshots, no photos, no icons. One illustration per slide.</textarea>
-                            </div>
-                            <div class="form-group">
-                                <label id="constraintLevelLabel">Úroveň omezení</label>
-                                <div class="toggle-group" role="radiogroup" aria-labelledby="constraintLevelLabel">
-                                    <input type="radio" name="constraintLevel" id="constraintNormal" value="normal" checked>
-                                    <label for="constraintNormal">Normální</label>
-                                    <input type="radio" name="constraintLevel" id="constraintStrict" value="strict">
-                                    <label for="constraintStrict">Přísná</label>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- SECTION 8: Theme Pack -->
-                    <section class="form-section">
-                        <div class="section-header">
-                            <span>📚</span> Tematický balíček – Rámování obsahu
-                        </div>
-                        <div class="section-content">
-                            <div class="form-group">
-                                <label for="themePack">Tematický balíček</label>
-                                <select id="themePack">
-                                    <option value="education">Vzdělávání</option>
-                                    <option value="business">Business</option>
-                                    <option value="technology">Technologie</option>
-                                    <option value="history">Historie / Humanitní vědy</option>
-                                    <option value="kids">Děti / Mládež</option>
-                                    <option value="creative">Kreativní / Vyprávění příběhů</option>
-                                    <option value="legal">Právní / Politika</option>
-                                    <option value="science">Věda / Výzkum</option>
-                                </select>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- SECTION 9: Terminology Rules -->
-                    <section class="form-section">
-                        <div class="section-header">
-                            <span>📖</span> Pravidla terminologie
-                        </div>
-                        <div class="section-content">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="geminiNaming" checked>
-                                <label for="geminiNaming">
-                                    Používat pouze název „Gemini"
-                                    <small>Bez čísel modelů (1.5, 2.0, atd.)</small>
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="additionalTerminology">Další pravidla terminologie</label>
-                                <textarea id="additionalTerminology" placeholder="např. Používat 'AI asistent' místo 'chatbot'..."></textarea>
-                            </div>
-                        </div>
-                    </section>
+                    </div>
+                </div>
+            </section>
 
                 </form>
             </div>
 
-            <!-- Right Panel: Output -->
-            <div class="output-panel">
+            <!-- Right column / step 4: result -->
+            <div class="output-panel step" id="step4" tabindex="-1" aria-labelledby="step4Title">
                 <div class="output-header">
-                    <h2>Vygenerovaný prompt</h2>
+                    <div class="section-header inline">
+                        <span class="step-badge" aria-hidden="true">4</span>
+                        <h2 class="step-title" id="step4Title">Výsledek</h2>
+                    </div>
                     <span class="output-stats" id="outputStats">0 znaků</span>
                 </div>
+                <section class="notebook-settings" aria-labelledby="notebookSettingsTitle">
+                    <h3 id="notebookSettingsTitle">Nastavte v Gemini Notebooku</h3>
+                    <pre id="notebookSettings" aria-live="polite"></pre>
+                </section>
                 <textarea id="generatedPrompt" readonly></textarea>
                 <div class="tips-section">
                     <h3>Tipy pro lepší výsledky</h3>
@@ -428,6 +401,7 @@
     <!-- ========================================
          JAVASCRIPT
          ======================================== -->
+    <div class="sr-only" id="modeAnnounce" role="status" aria-live="polite"></div>
     <script src="js/app.js"></script>
 </body>
 </html>

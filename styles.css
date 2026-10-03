@@ -1,5 +1,5 @@
 /* ============================================================
-   NotebookLM Generátor promptů — vizuální systém M2B2
+   Gemini Notebook Generátor promptů — vizuální systém M2B2
    „Klidný světlý pracovní list"
    Vynucené světlé učitelské téma bez ohledu na systémové
    barevné schéma (M2B2.2 – automatický tmavý režim odstraněn).
@@ -396,6 +396,26 @@ textarea {
     margin-bottom: var(--sp-3);
 }
 
+.notebook-settings {
+    margin: 0 0 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface-2);
+}
+
+.notebook-settings h3 {
+    margin: 0 0 6px;
+    font-size: 0.9rem;
+}
+
+.notebook-settings pre {
+    margin: 0;
+    color: var(--text-secondary);
+    font: inherit;
+    white-space: pre-wrap;
+}
+
 .output-header h2 {
     font-size: 1.05rem;
     font-weight: 600;
@@ -732,6 +752,226 @@ textarea:focus-visible,
 }
 
 /* ========================================
+   M2C — KROKY, REŽIM, POKROČILÁ NASTAVENÍ
+   ======================================== */
+/* Toolbar pod hlavičkou: navigace kroků + přepínač režimu */
+.flow-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-6);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.step-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.step-nav-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: 0;
+    padding: 0;
+}
+
+.step-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    min-height: 40px;
+    border: 1px solid var(--border-control);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+.step-nav-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.step-nav-btn:hover {
+    background: var(--surface-2);
+    border-color: var(--text-muted);
+}
+
+.step-nav-btn[aria-current="step"] {
+    background: var(--accent-weak);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.step-nav-btn[aria-current="step"] .step-nav-num {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+.step-nav-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* Přepínač Jednoduchý / Pokročilý (segmentovaný radiogroup) */
+.mode-switch {
+    display: inline-flex;
+    flex-shrink: 0;
+    border: 1px solid var(--border-control);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+}
+
+.mode-switch input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+.mode-switch label {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    min-height: 40px;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-right: 1px solid var(--border-control);
+    transition: background var(--transition), color var(--transition);
+}
+
+.mode-switch label:last-of-type {
+    border-right: none;
+}
+
+.mode-switch input[type="radio"]:checked + label {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+.mode-switch input[type="radio"]:focus-visible + label {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+}
+
+.mode-hint {
+    padding: var(--sp-2) var(--sp-6) 0;
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Nadpis kroku: číselná značka + titulek */
+.section-header .step-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 1;
+    flex-shrink: 0;
+}
+
+.step-title {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.section-header.inline {
+    padding: 0;
+    border-bottom: none;
+}
+
+.step-hint {
+    margin: 0;
+    padding: var(--sp-2) var(--sp-4) 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Blok pokročilých polí uvnitř kroku */
+.advanced-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-3);
+    border-top: 1px dashed var(--border-strong);
+}
+
+/* `display` above would otherwise override the UA `[hidden]` rule, so the
+   Simple-mode hiding must be reasserted explicitly. */
+.advanced-block[hidden] {
+    display: none;
+}
+
+.advanced-block-label {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+/* Upozornění na aktivní pokročilá nastavení (neblokující, ne chyba) */
+.adv-notice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--accent-weak);
+    border: 1px solid var(--tips-border);
+    border-radius: var(--r-md);
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+.adv-notice[hidden] {
+    display: none;
+}
+
+.adv-notice-text {
+    flex: 1 1 auto;
+}
+
+/* ========================================
    RESPONSIVE
    Zachovává původní funkční breakpoint (920px): panely se
    skládají pod sebe do dvou nezávisle scrollovatelných oblastí.
@@ -759,11 +999,21 @@ textarea:focus-visible,
 
 @media (max-width: 560px) {
     .header,
+    .flow-toolbar,
+    .mode-hint,
     .form-panel,
     .output-panel,
     .action-bar {
         padding-left: var(--sp-4);
         padding-right: var(--sp-4);
+    }
+
+    .flow-toolbar {
+        gap: var(--sp-2);
+    }
+
+    .step-nav {
+        flex-basis: 100%;
     }
 
     .form-row {
@@ -788,7 +1038,9 @@ textarea:focus-visible,
     input[type="number"],
     select,
     textarea,
-    .toggle-group label {
+    .toggle-group label,
+    .step-nav-btn,
+    .mode-switch label {
         min-height: 44px;
     }
 }
@@ -865,7 +1117,25 @@ textarea:focus-visible,
     }
 
     /* Vybraný přepínač se v forced-colors nespoléhá jen na pozadí. */
-    .toggle-group input[type="radio"]:checked + label {
+    .toggle-group input[type="radio"]:checked + label,
+    .mode-switch input[type="radio"]:checked + label {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+
+    /* Kroky a přepínač režimu: ohraničení a stav i bez barev. */
+    .step-nav-btn,
+    .mode-switch {
+        border: 1px solid CanvasText;
+    }
+
+    .step-nav-btn:focus-visible,
+    .mode-switch input[type="radio"]:focus-visible + label {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+
+    .step-nav-btn[aria-current="step"] {
         outline: 2px solid Highlight;
         outline-offset: -2px;
     }
