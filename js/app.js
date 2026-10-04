@@ -102,7 +102,17 @@
             'dreamlike': 'dreamlike.webp',
             'dark-academia': 'dark-academia.webp',
             'nordic-light': 'nordic-light.webp',
-            'boho-handcrafted': 'boho-handcrafted.webp'
+            'boho-handcrafted': 'boho-handcrafted.webp',
+            'concept-map': 'concept-map.webp',
+            'whiteboard': 'whiteboard.webp',
+            'vintage-edu': 'vintage-edu.webp',
+            'kids-flat': 'kids-flat.webp',
+            'playful-classroom': 'playful-classroom.webp',
+            'mascot-based': 'mascot-based.webp',
+            'corporate-minimal': 'corporate-minimal.webp',
+            'legal-policy': 'legal-policy.webp',
+            'blueprint': 'blueprint.webp',
+            'data-storytelling': 'data-storytelling.webp'
         };
         const RECOMMENDED_ILLUSTRATIONS = [
             'textbook-modern', 'infographic-clean', 'flat-vector', 'step-by-step',
