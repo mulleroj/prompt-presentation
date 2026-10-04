@@ -87,7 +87,14 @@
             'ink-line-art': 'ink-line-art.webp',
             'pastel-chalkboard': 'pastel-chalkboard.webp',
             'gouache': 'gouache.webp',
-            'soft-gradient': 'soft-gradient.webp'
+            'soft-gradient': 'soft-gradient.webp',
+            'journey-roadmap': 'journey-roadmap.webp',
+            'metaphor-driven': 'metaphor-driven.webp',
+            'explainer-style': 'explainer-style.webp',
+            'abstract-concept': 'abstract-concept.webp',
+            'surreal-edu': 'surreal-edu.webp',
+            'symbolic-visual': 'symbolic-visual.webp',
+            'minimal-metaphor': 'minimal-metaphor.webp'
         };
         const RECOMMENDED_ILLUSTRATIONS = [
             'textbook-modern', 'infographic-clean', 'flat-vector', 'step-by-step',
