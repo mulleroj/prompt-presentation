@@ -602,6 +602,15 @@ textarea {
     .style-card-title { font-size: .76rem; }
     .style-card-description { font-size: .66rem; }
     .style-preview { grid-column: 3; grid-row: 1 / span 2; }
+
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-explorer {
+        grid-template-columns: minmax(380px, .95fr) minmax(380px, 1.05fr);
+        align-items: start;
+    }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-more-toggle { grid-column: 1 / -1; grid-row: 1; }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-browser { grid-column: 1; grid-row: 2; }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-preview { grid-column: 2; grid-row: 2; }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-recommendations { grid-column: 1 / -1; grid-row: 3; }
 }
 
 @media (min-width: 921px) and (max-width: 1199px) {
@@ -613,6 +622,15 @@ textarea {
     .style-card:has(input:checked) { padding: 6px; }
     .style-card-title { font-size: .76rem; }
     .style-card-description { font-size: .66rem; }
+
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-explorer {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, .95fr);
+        align-items: start;
+    }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-browser { grid-column: 1; grid-row: 1; }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-more-toggle { grid-column: 1 / -1; grid-row: 2; justify-self: start; }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-preview { grid-column: 2; grid-row: 1; }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-recommendations { grid-column: 1 / -1; grid-row: 3; }
 }
 
 @media (max-width: 920px) {
@@ -1417,6 +1435,12 @@ textarea:focus-visible,
 
 @media (max-width: 920px) {
     .style-browser { max-height: 360px; }
+
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-catalog-controls { display: contents; }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-more-toggle { grid-column: 1; grid-row: 1; }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-browser { grid-column: 1; grid-row: 2; }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-preview { grid-column: 1; grid-row: 3; }
+    body:has(#styleMoreToggle[aria-expanded="true"]):not(:has(#modeAdvanced:checked)) .style-recommendations { grid-column: 1; grid-row: 4; }
 }
 
 @media (min-width: 921px) {
