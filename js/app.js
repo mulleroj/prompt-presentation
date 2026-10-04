@@ -74,6 +74,14 @@
             'engineering-diagram': { labelCs: 'Technický nákres', labelEn: 'Engineering Diagram', descriptionCs: 'Techniku, elektro, stroje a vysvětlování principů zařízení.', recommended: true, previewFile: 'engineering-diagram.webp' },
             'research-academic': { labelCs: 'Akademický styl', labelEn: 'Research / Academic', descriptionCs: 'Odborná, vědecká a formálnější témata.', recommended: true, previewFile: 'research-academic.webp' }
         };
+        const STYLE_PREVIEW_FILES = {
+            '3d-cut-paper': '3d-cut-paper.webp',
+            'isometric': 'isometric.webp',
+            'claymorphism': 'claymorphism.webp',
+            'retro-poster': 'retro-poster.webp',
+            'comic': 'comic.webp',
+            'storybook': 'storybook.webp'
+        };
         const RECOMMENDED_ILLUSTRATIONS = [
             'textbook-modern', 'infographic-clean', 'flat-vector', 'step-by-step',
             'narrative-visual', 'watercolor', 'engineering-diagram', 'research-academic'
@@ -737,7 +745,7 @@
             const match = raw.match(/^(.+?)\s*\((.+)\)$/);
             const labelEn = match ? match[1].trim() : raw;
             const labelCs = match ? match[2].trim() : id.replace(/-/g, ' ');
-            ILLUSTRATION_META[id] = { labelCs, labelEn, descriptionCs: ILLUSTRATION_SNIPPETS[id] || '', recommended: false, previewFile: null };
+            ILLUSTRATION_META[id] = { labelCs, labelEn, descriptionCs: ILLUSTRATION_SNIPPETS[id] || '', recommended: false, previewFile: STYLE_PREVIEW_FILES[id] || null };
             return ILLUSTRATION_META[id];
         }
 
