@@ -549,8 +549,8 @@
             const toggle = document.getElementById('styleMoreToggle');
             if (selectGroup && browser && cards && recommendations && toggle) {
                 const expanded = toggle.getAttribute('aria-expanded') === 'true';
-                recommendations.hidden = advanced;
-                cards.hidden = advanced;
+                recommendations.hidden = advanced || expanded;
+                cards.hidden = advanced || expanded;
                 toggle.hidden = advanced;
                 browser.hidden = !(advanced || expanded);
                 selectGroup.hidden = true;
@@ -850,7 +850,8 @@
             const toggle = document.getElementById('styleMoreToggle');
             toggle.addEventListener('click', () => {
                 const next = toggle.getAttribute('aria-expanded') !== 'true'; toggle.setAttribute('aria-expanded', String(next));
-                browser.hidden = !next; toggle.textContent = next ? 'Skrýt další styly' : 'Zobrazit všech 46 stylů';
+                toggle.textContent = next ? 'Skrýt další styly' : 'Zobrazit všech 46 stylů';
+                applyModeVisibility(getViewMode());
             });
             select.addEventListener('change', updateStyleExplorer);
         }
