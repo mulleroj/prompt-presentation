@@ -80,7 +80,14 @@
             'claymorphism': 'claymorphism.webp',
             'retro-poster': 'retro-poster.webp',
             'comic': 'comic.webp',
-            'storybook': 'storybook.webp'
+            'storybook': 'storybook.webp',
+            'collage': 'collage.webp',
+            'noir': 'noir.webp',
+            'paper-collage': 'paper-collage.webp',
+            'ink-line-art': 'ink-line-art.webp',
+            'pastel-chalkboard': 'pastel-chalkboard.webp',
+            'gouache': 'gouache.webp',
+            'soft-gradient': 'soft-gradient.webp'
         };
         const RECOMMENDED_ILLUSTRATIONS = [
             'textbook-modern', 'infographic-clean', 'flat-vector', 'step-by-step',
@@ -753,6 +760,7 @@
             const select = document.getElementById('illustrationPreset');
             const selectGroup = document.getElementById('illustrationSelectGroup');
             const browser = document.getElementById('styleBrowser');
+            let suppressPointerPreviewUntilMove = false;
             selectGroup.appendChild(select);
             Array.from(select.options).forEach(option => {
                 const meta = getIllustrationMeta(option.value);
@@ -788,7 +796,9 @@
                     const en = document.createElement('span'); en.className = 'style-browser-en'; en.textContent = meta.labelEn;
                     const check = document.createElement('span'); check.className = 'style-browser-selected'; check.textContent = '✓ Vybráno'; check.setAttribute('aria-hidden', 'true');
                     button.append(cs, en, check);
-                    button.addEventListener('pointerenter', () => showStylePreview(button.dataset.styleId));
+                    button.addEventListener('pointerenter', () => {
+                        if (!suppressPointerPreviewUntilMove) showStylePreview(button.dataset.styleId);
+                    });
                     button.addEventListener('focus', () => showStylePreview(button.dataset.styleId));
                     button.addEventListener('click', () => chooseStyle(button.dataset.styleId));
                     button.addEventListener('keydown', event => {
@@ -798,12 +808,18 @@
                         if (event.key === 'Home') next = items[0]; if (event.key === 'End') next = items[items.length - 1];
                         if (next) { event.preventDefault(); next.focus(); next.scrollIntoView({ block: 'nearest' }); }
                         if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); chooseStyle(button.dataset.styleId); }
-                        if (event.key === 'Escape') { event.preventDefault(); showStylePreview(select.value); browser.querySelector('[data-style-id="' + CSS.escape(select.value) + '"]')?.focus(); }
+                        if (event.key === 'Escape') {
+                            event.preventDefault();
+                            suppressPointerPreviewUntilMove = true;
+                            showStylePreview(select.value);
+                            browser.querySelector('[data-style-id="' + CSS.escape(select.value) + '"]')?.focus();
+                        }
                     });
                     list.appendChild(button);
                 });
                 section.append(heading, list); browser.appendChild(section);
             });
+            browser.addEventListener('pointermove', () => { suppressPointerPreviewUntilMove = false; });
             browser.addEventListener('pointerleave', () => { if (!browser.contains(document.activeElement)) showStylePreview(select.value); });
             browser.addEventListener('focusout', event => { if (!browser.contains(event.relatedTarget) && !browser.matches(':hover')) showStylePreview(select.value); });
             const toggle = document.getElementById('styleMoreToggle');
