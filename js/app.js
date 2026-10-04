@@ -94,7 +94,15 @@
             'abstract-concept': 'abstract-concept.webp',
             'surreal-edu': 'surreal-edu.webp',
             'symbolic-visual': 'symbolic-visual.webp',
-            'minimal-metaphor': 'minimal-metaphor.webp'
+            'minimal-metaphor': 'minimal-metaphor.webp',
+            'illustrated-narrative': 'illustrated-narrative.webp',
+            'storyboard-frames': 'storyboard-frames.webp',
+            'visual-diary': 'visual-diary.webp',
+            'journey-illustration': 'journey-illustration.webp',
+            'dreamlike': 'dreamlike.webp',
+            'dark-academia': 'dark-academia.webp',
+            'nordic-light': 'nordic-light.webp',
+            'boho-handcrafted': 'boho-handcrafted.webp'
         };
         const RECOMMENDED_ILLUSTRATIONS = [
             'textbook-modern', 'infographic-clean', 'flat-vector', 'step-by-step',
@@ -863,7 +871,9 @@
             document.getElementById('stylePreviewName').textContent = meta.labelCs;
             document.getElementById('stylePreviewDescription').textContent = RECOMMENDED_ILLUSTRATIONS.includes(id)
                 ? 'Vhodné pro ' + meta.descriptionCs
-                : (meta.descriptionCs ? meta.descriptionCs + ' Náhled tohoto stylu zatím není k dispozici.' : 'Náhled tohoto stylu zatím není k dispozici.');
+                : (meta.previewFile
+                    ? meta.descriptionCs
+                    : (meta.descriptionCs ? meta.descriptionCs + ' Náhled tohoto stylu zatím není k dispozici.' : 'Náhled tohoto stylu zatím není k dispozici.'));
             document.getElementById('stylePreviewEnglish').textContent = meta.labelEn;
             const img = document.getElementById('stylePreviewImg'); const fallback = document.getElementById('stylePreviewFallback');
             const image = document.getElementById('stylePreviewImage');

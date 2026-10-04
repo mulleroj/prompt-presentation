@@ -557,6 +557,7 @@ textarea {
 .style-preview-image img { width: 100%; height: 100%; object-fit: contain; }
 .style-preview-image img[hidden] { display: none; }
 .style-preview-fallback { display: flex; min-height: 100px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px; color: var(--text-secondary); font-size: .78rem; text-align: center; }
+.style-preview-fallback[hidden] { display: none; }
 .style-preview-symbol { color: var(--accent-mint); font-size: 1.5rem; }
 .style-preview h4 { margin: var(--sp-3) 0 6px; color: var(--text); font-size: .98rem; }
 .style-preview p { margin: 0; color: var(--text-secondary); font-size: .8rem; line-height: 1.5; }
